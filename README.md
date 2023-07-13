@@ -13,6 +13,7 @@ https://github.com/Norlock/nvim-traveller/assets/7510943/44c0982d-0cb9-479f-823e
 - [x] Easy to cancel navigation or commands
 - [x] Move / rename a file or directory
 - [x] Follows symlinks
+- [ ] Support for Windows
 
 ## Startup
 

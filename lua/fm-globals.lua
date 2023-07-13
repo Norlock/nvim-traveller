@@ -3,11 +3,11 @@ local M = {
 }
 
 function M.is_item_directory(item)
-    local ending = "/" -- TODO windows variant
+    local ending = "/"
     return item:sub(- #ending) == ending
 end
 
-local path = os.getenv("HOME") .. "/.cache/nvim/nvim-traveller.log"
+local path = vim.fn.stdpath('log')
 
 function M.debug(val)
     local filewrite = io.open(path, "a+")

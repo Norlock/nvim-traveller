@@ -37,6 +37,7 @@ function M.create_new_state()
         buf_id = vim.api.nvim_create_buf(false, true),
         is_open = false,
         history = {},
+        show_hidden = true,
     }
 
     return M.state
@@ -68,7 +69,6 @@ function M.open_navigation()
     local function close_navigation()
         if state.is_open then
             vim.api.nvim_win_close(state.win_id, false)
-            --state.is_open = false
         end
     end
 
