@@ -6,7 +6,7 @@ local path = require("plenary.path")
 local function get_buffer_content(dir_path)
     local buf_content = {}
 
-    for item in io.popen("ls -pA " .. dir_path):lines() do
+    for item in io.popen("ls -pAL " .. dir_path):lines() do
         table.insert(buf_content, item)
     end
 
