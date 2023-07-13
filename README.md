@@ -10,7 +10,7 @@ https://github.com/Norlock/nvim-traveller/assets/7510943/44c0982d-0cb9-479f-823e
 - [x] Open a terminal tab into the navigated directory 
 - [x] Create files or directories
 - [x] Delete directories or files
-- [x] Easily to cancel navigation
+- [x] Easy to cancel navigation or commands
 - [x] Move / rename a file or directory
 - [x] Follows symlinks
 
