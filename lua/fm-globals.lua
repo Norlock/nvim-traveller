@@ -7,8 +7,10 @@ function M.is_item_directory(item)
     return item:sub(- #ending) == ending
 end
 
+local path = os.getenv("HOME") .. "/.cache/nvim/nvim-traveller.log"
+
 function M.debug(val)
-    local filewrite = io.open("debug.log", "a+")
+    local filewrite = io.open(path, "a+")
 
     if filewrite == nil then
         print("Can't open debug file")
@@ -18,6 +20,8 @@ function M.debug(val)
     filewrite:write(vim.inspect(val) .. "\n\n")
     filewrite:close()
 end
+
+M.debug("Opening Neovim")
 
 function M.round(num)
     local fraction = num % 1

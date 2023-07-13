@@ -56,12 +56,10 @@ function theming.theme_help_content(state)
     end
 
     local function hl_keymap(i, line)
-        fmGlobals.debug("line: " .. line)
         local start_column = line:find('%[')
         local end_column = line:find('%]')
 
         if start_column ~= nil and end_column ~= nil then
-            fmGlobals.debug("is een keymap: " .. start_column .. " " .. end_column)
             add_hl('SpecialChar', i, start_column, end_column - 1)
         end
     end
