@@ -7,7 +7,7 @@ function M.is_item_directory(item)
     return item:sub(- #ending) == ending
 end
 
-local path = vim.fn.stdpath('log')
+local path = vim.fn.stdpath('log') .. '/debug.log'
 
 function M.debug(val)
     local filewrite = io.open(path, "a+")

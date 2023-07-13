@@ -278,6 +278,11 @@ function M.open_navigation()
             popup.set_keymap('<Cr>', confirm_callback)
         end
 
+        local function toggle_hidden()
+            state.show_hidden = not state.show_hidden
+            reload()
+        end
+
         vim.keymap.set('n', 'q', close_navigation, buffer_options)
         vim.keymap.set('n', '<Esc>', close_navigation, buffer_options)
         vim.keymap.set('n', '<Right>', function() action_on_item(cmd.open) end, buffer_options)
@@ -295,6 +300,7 @@ function M.open_navigation()
         vim.keymap.set('n', 'h', navigate_to_parent, buffer_options)
         vim.keymap.set('n', '<F1>', "", buffer_options)
         vim.keymap.set('n', '?', function() fmPopup.create_help_popup(state.win_id) end, buffer_options)
+        vim.keymap.set('n', 'a', toggle_hidden, buffer_options)
 
         if fn ~= "" then
             table.insert(state.history, create_event(fd, fn))
