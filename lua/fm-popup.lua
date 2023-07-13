@@ -216,6 +216,7 @@ function M.create_help_popup(related_win_id)
         " [h / <Left>]              Navigate to parent",
         " [l / <Right> / <Cr>]      Navigate to directory or open item",
         " [q / <Esc>]               Close popup",
+        " [a]                       Toggle hidden or all files",
         " ",
         " -- Commands",
         " ",
@@ -242,8 +243,6 @@ function M.create_help_popup(related_win_id)
             col = 0,
             anchor = 'NW',
             style = 'minimal',
-            --border = 'solid',
-            --title = "test",
             noautocmd = true,
         }
 

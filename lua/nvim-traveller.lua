@@ -3,16 +3,6 @@ local fmGlobals = require("fm-globals")
 local fmPopup = require("fm-popup")
 local path = require("plenary.path")
 
-local function get_buffer_content(dir_path)
-    local buf_content = {}
-
-    for item in io.popen("ls -pAL " .. dir_path):lines() do
-        table.insert(buf_content, item)
-    end
-
-    return buf_content
-end
-
 local function create_event(dir_path, item_name)
     return {
         dir_path = dir_path,
@@ -87,8 +77,25 @@ function M.open_navigation()
     local function set_buffer_content(new_dir_path)
         assert(fmGlobals.is_item_directory(new_dir_path), "Passed path is not a directory")
 
+        local function get_buffer_content()
+            local function get_cmd_prefix()
+                if state.show_hidden then
+                    return "ls -pAL "
+                else
+                    return "ls -pL "
+                end
+            end
+            local buf_content = {}
+
+            for item in io.popen(get_cmd_prefix() .. new_dir_path):lines() do
+                table.insert(buf_content, item)
+            end
+
+            return buf_content
+        end
+
         state.dir_path = new_dir_path
-        state.buf_content = get_buffer_content(new_dir_path)
+        state.buf_content = get_buffer_content()
 
         vim.api.nvim_buf_set_option(state.buf_id, 'modifiable', true)
         vim.api.nvim_buf_set_lines(state.buf_id, 0, -1, true, state.buf_content)
@@ -126,7 +133,7 @@ function M.open_navigation()
 
         local sh_cmd = ":terminal"
         vim.cmd("tabe")
-        vim.cmd(sh_cmd .. " cd ".. dir_path .. " && $SHELL")
+        vim.cmd(sh_cmd .. " cd " .. dir_path .. " && $SHELL")
         vim.cmd("startinsert")
     end
 
