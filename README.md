@@ -19,9 +19,14 @@ Plug 'norlock/nvim-traveller'
 
 ## Usage
 
-lua:
+Lua:
 ```lua
-local file_manager = require('nvim-traveller')
+local traveller = require('nvim-traveller')
 
-vim.keymap.set('n', '<leader>o', file_manager.open_navigation, {})
+vim.keymap.set('n', '<leader>o', traveller.open_navigation, {})
+```
+
+Viml:
+```viml
+nnoremap <leader>o <cmd>lua require('nvim-traveller').open_navigation()<cr>
 ```
