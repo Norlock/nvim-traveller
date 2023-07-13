@@ -2,14 +2,7 @@
 A file manager inside Neovim. I used dirvish mostly for navigating files, but
 had problems with quickly cancelling navigation or I couldn't open files in tab. Most other navigators are either bloated or don't provide the necessary tools for your project
 
-https://raw.githubusercontent.com/Norlock/nvim-traveller/main/showcase.mp4
-https://raw.githubusercontent.com/Norlock/nvim-traveller/main/showcase2.mp4
-
-<video controls="" width="800" height="500" muted="" loop="" autoplay="">
-<source src="https://raw.githubusercontent.com/Norlock/nvim-traveller/main/showcase.mp4
-" type="video/mp4">
-</video>
-
+https://github.com/Norlock/nvim-traveller/assets/7510943/44c0982d-0cb9-479f-823e-7ef574a215ab
 
 ## Features
 - [x] Fast navigation through directories
