@@ -14,23 +14,20 @@ local function popup_module_builder()
 
         local popup = { state }
 
+        function popup.close_navigation()
+            fmGlobals.close_window(state)
+        end
+
         return popup, state
     end
 
     local function create_info_variant()
         local popup, state = create_module()
 
-        vim.api.nvim_create_autocmd({"BufWinLeave", "BufLeave", "BufHidden"}, {
+        vim.api.nvim_create_autocmd({"BufLeave", "BufHidden"}, {
             buffer = state.buf_id,
-            callback = function ()
-                state.is_open = false
-                vim.api.nvim_win_close(state.win_id, false)
-            end
+            callback = popup.close_navigation
         })
-
-        function popup.close_navigation()
-            vim.api.nvim_win_close(state.win_id, false)
-        end
 
         function popup.set_buffer_content(buf_content)
             state.buf_content = buf_content
@@ -49,15 +46,10 @@ local function popup_module_builder()
         vim.api.nvim_create_autocmd({"BufWinLeave", "BufLeave", "BufHidden"}, {
             buffer = state.buf_id,
             callback = function ()
-                state.is_open = false
                 vim.cmd('stopinsert')
-                vim.api.nvim_win_close(state.win_id, false)
+                popup.close_navigation()
             end
         })
-
-        function popup.close_navigation()
-            vim.api.nvim_win_close(state.win_id, false)
-        end
 
         return popup, state
     end
@@ -78,7 +70,7 @@ local function create_cmd_popup(dir_path, title)
             vim.api.nvim_buf_get_lines(state.buf_id, 0, 1, false)[1]
         )
 
-        if user_input == "" then
+        if user_input == nil then
             return ""
         end
 
@@ -87,11 +79,11 @@ local function create_cmd_popup(dir_path, title)
         local first_two_chars = string.sub(user_input, 1, 2)
         local first_char = string.sub(first_two_chars, 1, 1)
         if first_char == '/' or first_two_chars == '~/' then -- Absolute path
-            return "mv " .. old_filepath .. " " .. user_input
+            return "mv " .. old_filepath .. " " .. user_input .. fmGlobals.only_stderr
         end
 
         local new_filepath = dir_path .. user_input
-        return "mv " .. old_filepath .. " " .. new_filepath
+        return "mv " .. old_filepath .. " " .. new_filepath .. fmGlobals.only_stderr
     end
 
     function popup.create_sh_cmd(sh_cmd)
@@ -104,7 +96,7 @@ local function create_cmd_popup(dir_path, title)
             cmd = cmd .. " " .. dir_path .. item
         end
 
-        return cmd
+        return cmd .. fmGlobals.only_stderr
     end
 
     local function init()

@@ -24,6 +24,7 @@ local M = {
 
 function M.create_new_state()
     M.state = {
+        parent_buf_id = vim.api.nvim_get_current_buf(),
         buf_id = vim.api.nvim_create_buf(false, true),
         is_open = false,
         history = {},
@@ -31,6 +32,10 @@ function M.create_new_state()
     }
 
     return M.state
+end
+
+function M.close_navigation()
+    fmGlobals.close_window(M.state)
 end
 
 -- Opens the navigation
@@ -41,12 +46,9 @@ function M.open_navigation()
 
     local state = M.create_new_state();
 
-    vim.api.nvim_create_autocmd("BufWinLeave", {
-        buffer = state.buf_id,
-        callback = function()
-            state.is_open = false
-            vim.api.nvim_win_close(state.win_id, false)
-        end
+    vim.api.nvim_create_autocmd("BufEnter", {
+        buffer = state.parent_buf_id,
+        callback = M.close_navigation
     })
 
     local cmd = {
@@ -55,12 +57,6 @@ function M.open_navigation()
         vSplit = 'vsplit',
         hSplit = 'split',
     }
-
-    local function close_navigation()
-        if state.is_open then
-            vim.api.nvim_win_close(state.win_id, false)
-        end
-    end
 
     local function set_window_cursor()
         for i, buf_item in ipairs(state.buf_content) do
@@ -118,13 +114,15 @@ function M.open_navigation()
             end
         else
             local file_rel = path:new(state.dir_path .. item):make_relative()
-            close_navigation()
+            M.close_navigation()
             vim.cmd(cmd_str .. ' ' .. file_rel)
         end
     end
 
     local function get_relative_path()
-        return path:new(state.dir_path):make_relative() .. "/"
+        local rel = path:new(state.dir_path):make_relative()
+
+        if rel == "/" then return rel else return rel .. "/" end
     end
 
 
@@ -264,22 +262,38 @@ function M.open_navigation()
         local function delete_item()
             local dir_path = get_relative_path()
             local item_name = get_cursor_item(state)
+            fmGlobals.debug("dp: " .. dir_path)
 
             local function create_sh_cmd()
+                local function get_rm_cmd()
+                    if fmGlobals.item_is_part_of_git_repo(dir_path, item_name) then
+                        return "cd " .. dir_path .. " && git rm", item_name
+                    else
+                        return "rm", dir_path .. item_name
+                    end
+                end
+
+                local rm_prefix, rm_suffix = get_rm_cmd()
+
                 if fmGlobals.is_item_directory(item_name) then
-                    return "rm -rf " .. dir_path .. item_name
+                    return rm_prefix .. " -rf " .. rm_suffix
                 else
-                    return "rm " .. dir_path .. item_name
+                    return rm_prefix .. " " .. rm_suffix
                 end
             end
 
-            local sh_cmd = { create_sh_cmd() }
+            local sh_cmd = { create_sh_cmd() .. fmGlobals.only_stderr }
             local popup = fmPopup.create_delete_item_popup(sh_cmd, state.win_id)
 
             local function confirm_callback()
-                vim.fn.systemlist(sh_cmd[1])
+                local output = vim.fn.systemlist(sh_cmd[1])
                 reload()
                 popup.close_navigation()
+
+                if #output ~= 0 then
+                    fmGlobals.debug(output)
+                    fmPopup.create_info_popup(output, state.win_id, 'Command failed (Esc / q)')
+                end
             end
 
             popup.set_keymap('<Cr>', confirm_callback)
@@ -290,8 +304,8 @@ function M.open_navigation()
             reload()
         end
 
-        vim.keymap.set('n', 'q', close_navigation, buffer_options)
-        vim.keymap.set('n', '<Esc>', close_navigation, buffer_options)
+        vim.keymap.set('n', 'q', M.close_navigation, buffer_options)
+        vim.keymap.set('n', '<Esc>', M.close_navigation, buffer_options)
         vim.keymap.set('n', '<Right>', function() action_on_item(cmd.open) end, buffer_options)
         vim.keymap.set('n', 'l', function() action_on_item(cmd.open) end, buffer_options)
         vim.keymap.set('n', '<Cr>', function() action_on_item(cmd.open) end, buffer_options)

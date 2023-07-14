@@ -13,7 +13,9 @@ https://github.com/Norlock/nvim-traveller/assets/7510943/44c0982d-0cb9-479f-823e
 - [x] Easy to cancel navigation or commands
 - [x] Move / rename a file or directory
 - [x] Follows symlinks
-- [ ] Uses git-move / git-delete if possible
+- [x] Toggle hidden files
+- [x] Use git rm if possible
+- [ ] Use git mv if possible
 - [ ] Being able to pass stringed cmds "test file.lua"
 - [ ] Support for Windows (if people want it)
 
