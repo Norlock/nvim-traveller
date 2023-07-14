@@ -78,12 +78,14 @@ local function create_cmd_popup(dir_path, title)
 
         local first_two_chars = string.sub(user_input, 1, 2)
         local first_char = string.sub(first_two_chars, 1, 1)
-        if first_char == '/' or first_two_chars == '~/' then -- Absolute path
-            return "mv " .. old_filepath .. " " .. user_input .. fmGlobals.only_stderr
+
+        -- Check for absolute path in input
+        if first_char == '/' or first_two_chars == '~/' then
+            return "mv " .. old_filepath .. " " .. user_input
         end
 
         local new_filepath = dir_path .. user_input
-        return "mv " .. old_filepath .. " " .. new_filepath .. fmGlobals.only_stderr
+        return "mv " .. old_filepath .. " " .. new_filepath
     end
 
     function popup.create_sh_cmd(sh_cmd)

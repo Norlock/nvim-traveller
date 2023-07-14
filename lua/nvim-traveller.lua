@@ -212,8 +212,8 @@ function M.open_navigation()
 
         local buffer_options = { silent = true, buffer = state.buf_id }
 
-        local function confirm_new_item_callback(popup, sh_cmd)
-            local output = vim.fn.systemlist(popup.create_sh_cmd(sh_cmd))
+        local function confirm_callback(popup, sh_cmd)
+            local output = vim.fn.systemlist(sh_cmd)
             reload()
             popup.close_navigation()
 
@@ -226,37 +226,33 @@ function M.open_navigation()
         local function create_dir_popup()
             local popup = fmPopup.create_dir_popup(get_relative_path())
 
-            popup.set_keymap(
-                '<Cr>', function() confirm_new_item_callback(popup, 'mkdir') end
-            )
+            local function confirm_mkdir_callback()
+                confirm_callback(popup, popup.create_sh_cmd('mkdir'))
+            end
+
+            popup.set_keymap('<Cr>', confirm_mkdir_callback)
         end
 
         local function create_file_popup()
             local popup = fmPopup.create_file_popup(get_relative_path())
 
-            popup.set_keymap(
-                '<Cr>', function() confirm_new_item_callback(popup, 'touch') end
-            )
+            local function confirm_touch_callback()
+                confirm_callback(popup, popup.create_sh_cmd('touch'))
+            end
+
+            popup.set_keymap('<Cr>', confirm_touch_callback)
         end
 
         local function create_move_popup()
             local popup = fmPopup.create_move_popup(get_relative_path())
 
-            local function confirm_callback()
+            local function confirm_move_callback()
                 local item_name = get_cursor_item(state)
                 local sh_cmd = popup.create_rename_cmd(item_name)
-                local output = vim.fn.systemlist(sh_cmd)
-                popup.close_navigation()
-
-                if #output ~= 0 then
-                    fmGlobals.debug(output)
-                    fmPopup.create_info_popup(output, state.win_id, 'Command failed (Esc / q)')
-                else
-                    reload()
-                end
+                confirm_callback(popup, sh_cmd)
             end
 
-            popup.set_keymap('<Cr>', confirm_callback)
+            popup.set_keymap('<Cr>', confirm_move_callback)
         end
 
         local function delete_item()
@@ -284,18 +280,11 @@ function M.open_navigation()
             local sh_cmd = create_sh_cmd()
             local popup = fmPopup.create_delete_item_popup({ sh_cmd }, state.win_id)
 
-            local function confirm_callback()
-                local output = vim.fn.systemlist(sh_cmd .. fmGlobals.only_stderr)
-                reload()
-                popup.close_navigation()
-
-                if #output ~= 0 then
-                    fmGlobals.debug(output)
-                    fmPopup.create_info_popup(output, state.win_id, 'Command failed (Esc / q)')
-                end
+            local function confirm_delete_callback()
+                confirm_callback(popup, sh_cmd)
             end
 
-            popup.set_keymap('<Cr>', confirm_callback)
+            popup.set_keymap('<Cr>', confirm_delete_callback)
         end
 
         local function toggle_hidden()
@@ -331,6 +320,18 @@ function M.open_navigation()
     end
 
     init()
+end
+
+vim.g.loaded_netrwPlugin = 1
+vim.g.loaded_netrw = 1
+
+local fn = vim.fn.expand('%:t')
+
+if fn == "" then
+    fmGlobals.debug("fn: " .. fn)
+    vim.api.nvim_create_autocmd("VimEnter", {
+        callback = M.open_navigation
+    })
 end
 
 return M
