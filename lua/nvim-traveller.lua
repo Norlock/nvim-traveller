@@ -213,7 +213,7 @@ function M.open_navigation()
         local buffer_options = { silent = true, buffer = state.buf_id }
 
         local function confirm_callback(popup, sh_cmd)
-            local output = vim.fn.systemlist(sh_cmd)
+            local output = vim.fn.systemlist(sh_cmd .. fmGlobals.only_stderr)
             reload()
             popup.close_navigation()
 
@@ -248,8 +248,18 @@ function M.open_navigation()
 
             local function confirm_move_callback()
                 local item_name = get_cursor_item(state)
-                local sh_cmd = popup.create_rename_cmd(item_name)
-                confirm_callback(popup, sh_cmd)
+
+                -- Tries git mv first, if fails fallsback to mv.
+                local sh_cmd = popup.create_mv_cmd(item_name, "git mv")
+                local output = vim.fn.systemlist(sh_cmd .. fmGlobals.only_stderr)
+
+                if #output ~= 0 then
+                    fmGlobals.debug(output)
+                    confirm_callback(popup, popup.create_mv_cmd(item_name, "mv"))
+                else
+                    reload()
+                    popup.close_navigation()
+                end
             end
 
             popup.set_keymap('<Cr>', confirm_move_callback)
@@ -322,16 +332,19 @@ function M.open_navigation()
     init()
 end
 
-vim.g.loaded_netrwPlugin = 1
-vim.g.loaded_netrw = 1
+function M.setup(options)
+    if options.replace_netrw then
+        vim.g.loaded_netrwPlugin = 1
+        vim.g.loaded_netrw = 1
 
-local fn = vim.fn.expand('%:t')
+        local fn = vim.fn.expand('%:t')
 
-if fn == "" then
-    fmGlobals.debug("fn: " .. fn)
-    vim.api.nvim_create_autocmd("VimEnter", {
-        callback = M.open_navigation
-    })
+        if fn == "" then
+            vim.api.nvim_create_autocmd("VimEnter", {
+                callback = M.open_navigation
+            })
+        end
+    end
 end
 
 return M

@@ -65,7 +65,7 @@ local mod_builder = popup_module_builder()
 local function create_cmd_popup(dir_path, title)
     local popup, state = mod_builder.cmd_variant()
 
-    function popup.create_rename_cmd(filename)
+    function popup.create_mv_cmd(item_name, mv_cmd)
         local user_input = fmGlobals.trim(
             vim.api.nvim_buf_get_lines(state.buf_id, 0, 1, false)[1]
         )
@@ -74,18 +74,19 @@ local function create_cmd_popup(dir_path, title)
             return ""
         end
 
-        local old_filepath = dir_path .. filename
+        local sh_cmd_prefix = "cd " .. dir_path .. " && " .. mv_cmd .. " " .. item_name .. " "
 
         local first_two_chars = string.sub(user_input, 1, 2)
         local first_char = string.sub(first_two_chars, 1, 1)
 
         -- Check for absolute path in input
         if first_char == '/' or first_two_chars == '~/' then
-            return "mv " .. old_filepath .. " " .. user_input
+            return sh_cmd_prefix .. user_input
         end
 
         local new_filepath = dir_path .. user_input
-        return "mv " .. old_filepath .. " " .. new_filepath
+        fmGlobals.debug(new_filepath)
+        return sh_cmd_prefix .. new_filepath
     end
 
     function popup.create_sh_cmd(sh_cmd)
@@ -98,7 +99,7 @@ local function create_cmd_popup(dir_path, title)
             cmd = cmd .. " " .. dir_path .. item
         end
 
-        return cmd .. fmGlobals.only_stderr
+        return cmd
     end
 
     local function init()
