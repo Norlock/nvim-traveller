@@ -262,7 +262,6 @@ function M.open_navigation()
         local function delete_item()
             local dir_path = get_relative_path()
             local item_name = get_cursor_item(state)
-            fmGlobals.debug("dp: " .. dir_path)
 
             local function create_sh_cmd()
                 local function get_rm_cmd()
@@ -282,11 +281,11 @@ function M.open_navigation()
                 end
             end
 
-            local sh_cmd = { create_sh_cmd() .. fmGlobals.only_stderr }
-            local popup = fmPopup.create_delete_item_popup(sh_cmd, state.win_id)
+            local sh_cmd = create_sh_cmd()
+            local popup = fmPopup.create_delete_item_popup({ sh_cmd }, state.win_id)
 
             local function confirm_callback()
-                local output = vim.fn.systemlist(sh_cmd[1])
+                local output = vim.fn.systemlist(sh_cmd .. fmGlobals.only_stderr)
                 reload()
                 popup.close_navigation()
 
