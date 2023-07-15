@@ -1,4 +1,4 @@
-local fmGlobals = require("fm-globals")
+local fm_globals = require("fm-globals")
 local fmTheming = require("fm-theming")
 
 local function popup_module_builder()
@@ -12,10 +12,10 @@ local function popup_module_builder()
             buffer_options = { silent = true, buffer = buf_id }
         }
 
-        local popup = { state }
+        local popup = { state = state }
 
         function popup.close_navigation()
-            fmGlobals.close_window(state)
+            fm_globals.close_window(state)
         end
 
         return popup, state
@@ -62,43 +62,41 @@ end
 
 local mod_builder = popup_module_builder()
 
-local function create_cmd_popup(dir_path, title)
+local function create_cmd_popup(dir_path, title, buf_content)
     local popup, state = mod_builder.cmd_variant()
 
+    --TODO create fm-shell for shell commands
     function popup.create_mv_cmd(item_name, mv_cmd)
-        local user_input = fmGlobals.trim(
-            vim.api.nvim_buf_get_lines(state.buf_id, 0, 1, false)[1]
-        )
+        local user_input = vim.api.nvim_buf_get_lines(state.buf_id, 0, 1, false)[1]
 
         if user_input == nil then
             return ""
         end
 
-        local sh_cmd_prefix = "cd " .. dir_path .. " && " .. mv_cmd .. " " .. item_name .. " "
+        local sh_cmd_prefix = table.concat({"cd", dir_path, "&&", mv_cmd, fm_globals.sanitize(item_name)}, " ")
 
         local first_two_chars = string.sub(user_input, 1, 2)
         local first_char = string.sub(first_two_chars, 1, 1)
 
         -- Check for absolute path in input
         if first_char == '/' or first_two_chars == '~/' then
-            return sh_cmd_prefix .. user_input
+            local sanitize = fm_globals.sanitize(user_input)
+            return sh_cmd_prefix .. " " .. sanitize
+        else
+            return sh_cmd_prefix .. fm_globals.sanitize(dir_path .. user_input)
         end
-
-        local new_filepath = dir_path .. user_input
-        fmGlobals.debug(new_filepath)
-        return sh_cmd_prefix .. new_filepath
     end
 
     function popup.create_new_items_cmd()
         local user_input = vim.api.nvim_buf_get_lines(state.buf_id, 0, 1, false)
-        local parts = fmGlobals.split(user_input[1], " ")
+        local parts = fm_globals.split(user_input[1], " ")
 
         --local cmd = sh_cmd
         local touch_cmds = {}
         local mkdir_cmds = {}
 
         for _, item in ipairs(parts) do
-            if fmGlobals.is_item_directory(item) then
+            if fm_globals.is_item_directory(item) then
                 table.insert(mkdir_cmds, dir_path .. item)
             else
                 table.insert(touch_cmds, dir_path .. item)
@@ -135,15 +133,15 @@ local function create_cmd_popup(dir_path, title)
 
     local function init()
         local ui = vim.api.nvim_list_uis()[1]
-        local width = fmGlobals.round(ui.width * 0.6)
+        local width = fm_globals.round(ui.width * 0.6)
         local height = 1
 
         local win_options = {
             relative = 'editor',
             width = width,
             height = height,
-            col = (ui.width - width) * 0.5,
-            row = (ui.height - height) * 0.2,
+            col = fm_globals.round((ui.width - width) * 0.5),
+            row = fm_globals.round((ui.height - height) * 0.2),
             anchor = 'NW',
             style = 'minimal',
             border = 'rounded',
@@ -152,17 +150,15 @@ local function create_cmd_popup(dir_path, title)
             noautocmd = true,
         }
 
+        vim.api.nvim_buf_set_lines(state.buf_id, 0, -1, true, buf_content)
+
         state.win_id = vim.api.nvim_open_win(state.buf_id, true, win_options)
         state.is_open = true;
         fmTheming.add_theming(state)
-
-        vim.keymap.set('i', '<Esc>', popup.close_navigation, state.buffer_options)
-
-        vim.cmd('startinsert')
     end
 
-    function popup.set_keymap(lhs, rhs)
-        vim.keymap.set('i', lhs, rhs, state.buffer_options)
+    function popup.set_keymap(mode, lhs, rhs)
+        vim.keymap.set(mode, lhs, rhs, state.buffer_options)
     end
 
     init()
@@ -177,12 +173,23 @@ function M.create_delete_item_popup(buf_content, parent_win_id)
         'Confirm (Enter), cancel (Esc / q)')
 end
 
-function M.create_dir_popup(dir_path)
-    return create_cmd_popup(dir_path, ' Create (separate by space) ')
+function M.create_item_popup(dir_path)
+    local popup = create_cmd_popup(dir_path, ' Create (separate by space) ', {})
+
+    popup.set_keymap('i', '<Esc>', popup.close_navigation)
+    vim.cmd("startinsert")
+
+    return popup
 end
 
-function M.create_move_popup(dir_path)
-    return create_cmd_popup(dir_path, ' Move (mv) ')
+function M.create_move_popup(dir_path, item_name)
+    local popup = create_cmd_popup(dir_path, ' Move (mv) ', { dir_path .. item_name })
+
+    vim.api.nvim_win_set_cursor(popup.state.win_id, { 1, #dir_path })
+    popup.set_keymap('n', '<Esc>', popup.close_navigation)
+    popup.set_keymap('n', 'q', popup.close_navigation)
+
+    return popup
 end
 
 function M.create_info_popup(buf_content, related_win_id, title)
@@ -248,7 +255,7 @@ function M.create_help_popup(related_win_id)
         " [v]                       Open file as vsplit",
         " [=]                       Open terminal in tab",
         " [c]                       Create items (e.g.: test.lua lua/ lua/some_file.lua)",
-        " [dd]                      Delete item",
+        " [d]                       Delete item",
         " [m]                       Move or rename item (e.g.: .. will move to parent)",
         " [f]                       Toggle telescope find_files with directory at cursor",
         " [a]                       Toggle telescope live_grep with directory at cursor",

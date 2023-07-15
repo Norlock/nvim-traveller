@@ -23,7 +23,7 @@ function M.debug(val)
     filewrite:close()
 end
 
-M.debug("Opening Neovim " .. path)
+M.debug("Opening Neovim " .. os.date('%Y-%m-%d %H:%M:%S'))
 
 function M.round(num)
     local fraction = num % 1
@@ -46,8 +46,12 @@ function M.trim(str)
     return str:match("^%s*(.-)%s*$")
 end
 
+function M.sanitize(str)
+    return M.trim('"' .. str .. '"')
+end
+
 function M.item_is_part_of_git_repo(dir_path, item)
-    local sh_cmd = "cd " .. dir_path .. " && git ls-files --error-unmatch " .. item .. " > /dev/null"
+    local sh_cmd = "cd " .. M.sanitize(dir_path) .. " && git ls-files --error-unmatch " .. M.sanitize(item) .. M.only_stderr
     return #vim.fn.systemlist(sh_cmd) == 0
 end
 

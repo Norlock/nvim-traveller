@@ -95,6 +95,8 @@ function M.open_navigation()
 
         fm_theming.theme_buffer_content(state)
         set_window_cursor()
+
+        vim.cmd("nohlsearch")
     end
 
     local function reload()
@@ -118,7 +120,17 @@ function M.open_navigation()
     local function get_relative_path()
         local rel = path:new(state.dir_path):make_relative()
 
-        if rel == "/" then return rel else return rel .. "/" end
+        if fm_globals.is_item_directory(rel) then
+            return rel else return rel .. "/"
+        end
+    end
+
+    local function get_absolute_path()
+        local abs = path:new(state.dir_path):absolute()
+
+        if fm_globals.is_item_directory(abs) then
+            return abs else return abs .. "/"
+        end
     end
 
 
@@ -210,6 +222,7 @@ function M.open_navigation()
         local buffer_options = { silent = true, buffer = state.buf_id }
 
         local function confirm_callback(popup, sh_cmd)
+            fm_globals.debug('mv cmd: ' .. sh_cmd)
             local output = vim.fn.systemlist(sh_cmd .. fm_globals.only_stderr)
             reload()
             popup.close_navigation()
@@ -221,23 +234,24 @@ function M.open_navigation()
         end
 
         local function create_item_popup()
-            local popup = fm_popup.create_dir_popup(get_relative_path())
+            local popup = fm_popup.create_item_popup(get_relative_path())
 
             local function confirm_mkdir_callback()
                 confirm_callback(popup, popup.create_new_items_cmd())
             end
 
-            popup.set_keymap('<Cr>', confirm_mkdir_callback)
+            popup.set_keymap('i', '<Cr>', confirm_mkdir_callback)
         end
 
         local function create_move_popup()
-            local popup = fm_popup.create_move_popup(get_relative_path())
+            local item_name = fm_globals.get_cursor_navigation_item(state)
+            local popup = fm_popup.create_move_popup(get_absolute_path(),  item_name)
 
             local function confirm_move_callback()
-                local item_name = fm_globals.get_cursor_navigation_item(state)
-
                 -- Tries git mv first, if fails fallsback to mv.
+                fm_globals.debug("item_name " .. item_name)
                 local sh_cmd = popup.create_mv_cmd(item_name, "git mv")
+                fm_globals.debug('mv cmd: ' .. sh_cmd)
                 local output = vim.fn.systemlist(sh_cmd .. fm_globals.only_stderr)
 
                 if #output ~= 0 then
@@ -249,7 +263,8 @@ function M.open_navigation()
                 end
             end
 
-            popup.set_keymap('<Cr>', confirm_move_callback)
+            popup.set_keymap('i', '<Cr>', confirm_move_callback)
+            popup.set_keymap('n', '<Cr>', confirm_move_callback)
         end
 
         local function delete_item()
@@ -259,9 +274,9 @@ function M.open_navigation()
             local function create_sh_cmd()
                 local function get_rm_cmd()
                     if fm_globals.item_is_part_of_git_repo(dir_path, item_name) then
-                        return "cd " .. dir_path .. " && git rm", item_name
+                        return "cd " .. dir_path .. " && git rm", fm_globals.sanitize(item_name)
                     else
-                        return "rm", dir_path .. item_name
+                        return "rm", fm_globals.sanitize(dir_path .. item_name)
                     end
                 end
 
@@ -275,6 +290,7 @@ function M.open_navigation()
             end
 
             local sh_cmd = create_sh_cmd()
+            fm_globals.debug("delete: " .. sh_cmd)
             local popup = fm_popup.create_delete_item_popup({ sh_cmd }, state.win_id)
 
             local function confirm_delete_callback()
@@ -304,7 +320,7 @@ function M.open_navigation()
         vim.keymap.set('n', '=', open_terminal, buffer_options)
         vim.keymap.set('n', 'c', create_item_popup, buffer_options)
         vim.keymap.set('n', 'm', create_move_popup, buffer_options)
-        vim.keymap.set('n', 'dd', delete_item, buffer_options)
+        vim.keymap.set('n', 'd', delete_item, buffer_options)
         vim.keymap.set('n', '<Left>', navigate_to_parent, buffer_options)
         vim.keymap.set('n', 'h', navigate_to_parent, buffer_options)
         vim.keymap.set('n', '<F1>', "", buffer_options)
@@ -346,7 +362,6 @@ function M.setup(options)
 
         if buf_options ~= "hide" then
             local fd = vim.fn.expand('%:p:h')
-            fm_globals.debug("heeft cmd geroepen " .. fd)
             fm_globals.set_cwd_to_git_root(fd)
         end
     end
