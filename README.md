@@ -2,7 +2,14 @@
 A file manager inside Neovim. I used dirvish mostly for navigating files, but
 had problems with quickly cancelling navigation or I couldn't open files in tab. Most other navigators are either bloated or don't provide the necessary tools for my needs.
 
-With this file manager the emphasis is mostly on having a polished experience.
+What makes this file manager different than others?
+
+I want to put the emphasis on having a polished experience, and make it a file
+manager good for multi-project use, that means:
+
+- Having a polished experience no matter where you are
+- Being able to open a fuzzy file search or other plugins at location
+- Good integration with terminal 
 
 https://github.com/Norlock/nvim-traveller/assets/7510943/44c0982d-0cb9-479f-823e-7ef574a215ab
 
@@ -18,8 +25,12 @@ https://github.com/Norlock/nvim-traveller/assets/7510943/44c0982d-0cb9-479f-823e
 - [x] Toggle hidden files
 - [x] Use git rm if possible
 - [x] Use git mv if possible
+- [x] Telescope integration in directory
+- [ ] Change cd to git root if possible
+- [ ] Docs
+- [ ] FZF/(Other fuzzy file searcher)  if there is demand for it
 - [ ] Being able to pass stringed cmds "test file.lua"
-- [ ] Support for Windows (if people want it)
+- [ ] Support for Windows (if there is demand for it)
 
 ## Startup
 
@@ -51,3 +62,5 @@ Viml:
 ```viml
 nnoremap <leader>o <cmd>lua require('nvim-traveller').open_navigation()<cr>
 ```
+
+- When navigation is openend press ? for more info

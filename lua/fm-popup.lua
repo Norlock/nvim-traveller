@@ -239,6 +239,7 @@ function M.create_help_popup(related_win_id)
         " [l / <Right> / <Cr>]      Navigate to directory or open item",
         " [q / <Esc>]               Close popup",
         " [a]                       Toggle hidden or all files",
+        " [f]                       Toggle telescope with directory at cursor",
         " ",
         " -- Commands",
         " ",

@@ -48,8 +48,11 @@ end
 function M.item_is_part_of_git_repo(dir_path, item)
     local sh_cmd = "cd " .. dir_path .. " && git ls-files --error-unmatch " .. item .. " > /dev/null"
     return #vim.fn.systemlist(sh_cmd) == 0
+end
 
-    --return output == nil
+function M.directory_is_inside_a_git_repo(dir_path)
+    local sh_cmd = "cd " .. dir_path .. " && git rev-parse --is-inside-work-tree" .. M.only_stderr
+    return #vim.fn.systemlist(sh_cmd) == 0
 end
 
 function M.close_window(state)
@@ -57,6 +60,11 @@ function M.close_window(state)
         state.is_open = false
         vim.api.nvim_win_close(state.win_id, false)
     end
+end
+
+function M.get_cursor_navigation_item(state)
+	local cursor = vim.api.nvim_win_get_cursor(state.win_id)
+	return state.buf_content[cursor[1]]
 end
 
 return M
