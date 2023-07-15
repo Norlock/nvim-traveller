@@ -24,7 +24,7 @@ local function popup_module_builder()
     local function create_info_variant()
         local popup, state = create_module()
 
-        vim.api.nvim_create_autocmd({"BufLeave", "BufHidden"}, {
+        vim.api.nvim_create_autocmd({ "BufLeave", "BufHidden" }, {
             buffer = state.buf_id,
             callback = popup.close_navigation
         })
@@ -43,9 +43,9 @@ local function popup_module_builder()
     local function create_cmd_variant()
         local popup, state = create_module()
 
-        vim.api.nvim_create_autocmd({"BufWinLeave", "BufLeave", "BufHidden"}, {
+        vim.api.nvim_create_autocmd({ "BufWinLeave", "BufLeave", "BufHidden" }, {
             buffer = state.buf_id,
-            callback = function ()
+            callback = function()
                 vim.cmd('stopinsert')
                 popup.close_navigation()
             end
@@ -89,17 +89,48 @@ local function create_cmd_popup(dir_path, title)
         return sh_cmd_prefix .. new_filepath
     end
 
-    function popup.create_sh_cmd(sh_cmd)
+    function popup.create_new_items_cmd()
         local user_input = vim.api.nvim_buf_get_lines(state.buf_id, 0, 1, false)
         local parts = fmGlobals.split(user_input[1], " ")
 
-        local cmd = sh_cmd
+        --local cmd = sh_cmd
+        local touch_cmds = {}
+        local mkdir_cmds = {}
 
         for _, item in ipairs(parts) do
-            cmd = cmd .. " " .. dir_path .. item
+            if fmGlobals.is_item_directory(item) then
+                table.insert(mkdir_cmds, dir_path .. item)
+            else
+                table.insert(touch_cmds, dir_path .. item)
+            end
         end
 
-        return cmd
+        local mkdr_sh_cmd = "mkdir -p"
+        local touch_sh_cmd = "touch"
+        local has_mkdir_cmds = #mkdir_cmds ~= 0
+        local has_touch_cmds = #touch_cmds ~= 0
+
+        if has_mkdir_cmds then
+            for _, item in pairs(mkdir_cmds) do
+                mkdr_sh_cmd = mkdr_sh_cmd .. " " .. item
+            end
+        end
+
+        if has_touch_cmds then
+            for _, item in pairs(touch_cmds) do
+                touch_sh_cmd = touch_sh_cmd .. " " .. item
+            end
+        end
+
+        if has_mkdir_cmds then
+            if has_touch_cmds then
+                return mkdr_sh_cmd .. " && " .. touch_sh_cmd
+            else
+                return mkdr_sh_cmd
+            end
+        else
+            return touch_sh_cmd
+        end
     end
 
     local function init()
@@ -146,12 +177,8 @@ function M.create_delete_item_popup(buf_content, parent_win_id)
         'Confirm (Enter), cancel (Esc / q)')
 end
 
-function M.create_file_popup(dir_path)
-    return create_cmd_popup(dir_path, ' Touch (separate by space) ')
-end
-
 function M.create_dir_popup(dir_path)
-    return create_cmd_popup(dir_path, ' Mkdir (separate by space) ')
+    return create_cmd_popup(dir_path, ' Create (separate by space) ')
 end
 
 function M.create_move_popup(dir_path)
@@ -219,8 +246,7 @@ function M.create_help_popup(related_win_id)
         " [s]                       Open file as split",
         " [v]                       Open file as vsplit",
         " [=]                       Open terminal in tab",
-        " [cf]                      Create file (e.g.: test.lua test2.lua)",
-        " [cd]                      Create directory (e.g.: css js public",
+        " [c]                       Create items (e.g.: test.lua lua/ lua/some_file.lua)",
         " [dd]                      Delete item",
         " [m]                       Move or rename item (e.g.: .. will move to parent)",
     }

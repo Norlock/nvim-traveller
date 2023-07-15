@@ -223,24 +223,14 @@ function M.open_navigation()
             end
         end
 
-        local function create_dir_popup()
+        local function create_item_popup()
             local popup = fmPopup.create_dir_popup(get_relative_path())
 
             local function confirm_mkdir_callback()
-                confirm_callback(popup, popup.create_sh_cmd('mkdir'))
+                confirm_callback(popup, popup.create_new_items_cmd())
             end
 
             popup.set_keymap('<Cr>', confirm_mkdir_callback)
-        end
-
-        local function create_file_popup()
-            local popup = fmPopup.create_file_popup(get_relative_path())
-
-            local function confirm_touch_callback()
-                confirm_callback(popup, popup.create_sh_cmd('touch'))
-            end
-
-            popup.set_keymap('<Cr>', confirm_touch_callback)
         end
 
         local function create_move_popup()
@@ -311,8 +301,7 @@ function M.open_navigation()
         vim.keymap.set('n', 's', function() action_on_item(cmd.hSplit) end, buffer_options)
         vim.keymap.set('n', 't', function() action_on_item(cmd.openTab) end, buffer_options)
         vim.keymap.set('n', '=', open_terminal, buffer_options)
-        vim.keymap.set('n', 'cd', create_dir_popup, buffer_options)
-        vim.keymap.set('n', 'cf', create_file_popup, buffer_options)
+        vim.keymap.set('n', 'c', create_item_popup, buffer_options)
         vim.keymap.set('n', 'm', create_move_popup, buffer_options)
         vim.keymap.set('n', 'dd', delete_item, buffer_options)
         vim.keymap.set('n', '<Left>', navigate_to_parent, buffer_options)
