@@ -7,9 +7,9 @@ What makes this file manager different than others?
 I want to put the emphasis on having a polished experience, and make it a file
 manager good for multi-project use, that means:
 
-- No difficult key combinations \<C+..> or \<A..> which overloads the user
+- Tries to avoid difficult key combinations as much as possible
 - Very quickly toggle help menu with: ?
-- Being able to use fuzzy file search or other plugins at location
+- Being able to use fuzzy file search or use other plugins at location
 - Good integration with terminal
 - Git commands if possible
 - Change cwd to git root cleanly

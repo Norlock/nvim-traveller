@@ -2,36 +2,48 @@ local fm_globals = require("fm-globals")
 
 local M = {}
 
--- Telescope integration
-function M.open_telescope(state)
+local function init()
     if not package.loaded["telescope"] then
         fm_globals.debug("Telescope is not loaded")
         return
     end
 
-    local function get_telescope_dir()
-        local item = fm_globals.get_cursor_navigation_item(state)
-        if fm_globals.is_item_directory(item) then
-            return state.dir_path .. item
-        else
-            return state.dir_path
-        end
+    M.builtin = require("telescope.builtin")
+end
+
+init()
+
+local function get_telescope_dir(state)
+    local item = fm_globals.get_cursor_navigation_item(state)
+    if fm_globals.is_item_directory(item) then
+        return state.dir_path .. item
+    else
+        return state.dir_path
+    end
+end
+
+function M.find_files(state)
+    if M.builtin == nil then
+        return
     end
 
-    local telescope_dir = get_telescope_dir()
+    local telescope_dir = get_telescope_dir(state)
 
-	fm_globals.close_window(state)
+    fm_globals.close_window(state)
 
-    local builtin = require("telescope.builtin")
+    M.builtin.find_files({ cwd = telescope_dir })
+end
 
-    builtin.find_files({ cwd = telescope_dir })
-    --if fm_globals.directory_is_inside_a_git_repo(telescope_dir) then
-        --fm_globals.debug("is a git repo")
-        --builtin.git_files({ cwd = telescope_dir })
-    --else
-        --fm_globals.debug("is not a git repo")
-        --builtin.find_files({ cwd = telescope_dir })
-    --end
+function M.live_grep(state)
+    if M.builtin == nil then
+        return
+    end
+
+    local telescope_dir = get_telescope_dir(state)
+
+    fm_globals.close_window(state)
+
+    M.builtin.live_grep({ cwd = telescope_dir })
 end
 
 return M

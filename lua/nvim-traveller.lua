@@ -309,11 +309,12 @@ function M.open_navigation()
         vim.keymap.set('n', 'h', navigate_to_parent, buffer_options)
         vim.keymap.set('n', '<F1>', "", buffer_options)
         vim.keymap.set('n', '?', function() fm_popup.create_help_popup(state.win_id) end, buffer_options)
-        vim.keymap.set('n', 'a', toggle_hidden, buffer_options)
+        vim.keymap.set('n', '<A-.>', toggle_hidden, buffer_options)
         vim.keymap.set('n', '~', navigate_to_home_directory, buffer_options)
 
         -- Plugin integration
-        vim.keymap.set('n', 'f', function() fm_plugin.open_telescope(state) end, buffer_options)
+        vim.keymap.set('n', 'f', function() fm_plugin.find_files(state) end, buffer_options)
+        vim.keymap.set('n', 'a', function() fm_plugin.live_grep(state) end, buffer_options)
 
         if fn ~= "" then
             table.insert(state.history, create_event(fd, fn))
