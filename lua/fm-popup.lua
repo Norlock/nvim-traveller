@@ -240,6 +240,7 @@ function M.create_help_popup(related_win_id)
         " [q / <Esc>]               Close popup",
         " [a]                       Toggle hidden or all files",
         " [f]                       Toggle telescope with directory at cursor",
+        " [~]                       Navigate to home directory",
         " ",
         " -- Commands",
         " ",

@@ -1,6 +1,7 @@
 local M = {
     os = vim.loop.os_uname().sysname,
-    only_stderr = " > /dev/null"
+    only_stderr = " > /dev/null",
+    only_stdout = " 2> /dev/null",
 }
 
 function M.is_item_directory(item)
@@ -48,6 +49,15 @@ end
 function M.item_is_part_of_git_repo(dir_path, item)
     local sh_cmd = "cd " .. dir_path .. " && git ls-files --error-unmatch " .. item .. " > /dev/null"
     return #vim.fn.systemlist(sh_cmd) == 0
+end
+
+function M.set_cwd_to_git_root(dir_path)
+    local sh_cmd = "cd " .. dir_path .. " && git rev-parse --show-toplevel" .. M.only_stdout
+    local output = vim.fn.systemlist(sh_cmd)
+
+    if #output ~= 0 then
+        vim.cmd("cd " .. output[1])
+    end
 end
 
 function M.directory_is_inside_a_git_repo(dir_path)

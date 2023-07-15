@@ -7,9 +7,12 @@ What makes this file manager different than others?
 I want to put the emphasis on having a polished experience, and make it a file
 manager good for multi-project use, that means:
 
-- Having a polished experience no matter where you are
-- Being able to open a fuzzy file search or other plugins at location
-- Good integration with terminal 
+- No difficult key combinations \<C+..> or \<A..> which overloads the user
+- Very quickly toggle help menu with: ?
+- Being able to use fuzzy file search or other plugins at location
+- Good integration with terminal
+- Git commands if possible
+- Change cwd to git root cleanly
 
 https://github.com/Norlock/nvim-traveller/assets/7510943/44c0982d-0cb9-479f-823e-7ef574a215ab
 
@@ -26,7 +29,8 @@ https://github.com/Norlock/nvim-traveller/assets/7510943/44c0982d-0cb9-479f-823e
 - [x] Use git rm if possible
 - [x] Use git mv if possible
 - [x] Telescope integration in directory
-- [ ] Change cd to git root if possible
+- [x] Change cd to git root if possible
+- [x] Navigate to home directory hotkey
 - [ ] Docs
 - [ ] FZF/(Other fuzzy file searcher)  if there is demand for it
 - [ ] Being able to pass stringed cmds "test file.lua"
@@ -53,7 +57,9 @@ Plug 'norlock/nvim-traveller'
 Lua:
 ```lua
 local traveller = require('nvim-traveller')
-traveller.setup({ replace_netrw = true }) -- or remove this line.
+-- sync_cwd flag is useful for plugin compatibility if you work with multiple
+projects
+traveller.setup({ replace_netrw = true, sync_cwd = true })
 
 vim.keymap.set('n', '<leader>o', traveller.open_navigation, {})
 ```
