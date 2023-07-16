@@ -350,9 +350,13 @@ function M.setup(options)
 
         local fn = vim.fn.expand('%:t')
 
+        local function enter_term()
+            M.open_navigation()
+        end
+
         if fn == "" then
             vim.api.nvim_create_autocmd("VimEnter", {
-                callback = M.open_navigation
+                callback = enter_term
             })
         end
     end

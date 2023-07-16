@@ -57,8 +57,7 @@ Plug 'norlock/nvim-traveller'
 Lua:
 ```lua
 local traveller = require('nvim-traveller')
--- sync_cwd flag is useful for plugin compatibility if you work with multiple
-projects
+-- sync_cwd flag is useful for plugin compatibility if you work with multiple projects
 traveller.setup({ replace_netrw = true, sync_cwd = true })
 
 vim.keymap.set('n', '<leader>o', traveller.open_navigation, {})
