@@ -76,9 +76,8 @@ function M.close_window(state)
     end
 end
 
-function M.get_cursor_navigation_item(state)
-	local cursor = vim.api.nvim_win_get_cursor(state.win_id)
-	return state.buf_content[cursor[1]]
+function M.get_home_directory()
+    return vim.fn.expand("$HOME") .. "/"
 end
 
 return M
