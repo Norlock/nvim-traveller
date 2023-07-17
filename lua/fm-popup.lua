@@ -5,6 +5,7 @@ local function popup_module_builder()
     local function create_module()
         local buf_id = vim.api.nvim_create_buf(false, true)
 
+        -- TODO refactor similar to navigation state
         local state = {
             buf_id = buf_id,
             buf_content = {},
@@ -73,7 +74,7 @@ local function create_cmd_popup(dir_path, title, buf_content)
             return ""
         end
 
-        local sh_cmd_prefix = table.concat({"cd", dir_path, "&&", mv_cmd, fm_globals.sanitize(item_name)}, " ")
+        local sh_cmd_prefix = table.concat({ "cd", dir_path, "&&", mv_cmd, fm_globals.sanitize(item_name) }, " ")
 
         local first_two_chars = string.sub(user_input, 1, 2)
         local first_char = string.sub(first_two_chars, 1, 1)
@@ -262,18 +263,21 @@ function M.create_help_popup(related_win_id)
     }
 
     local function init()
-        local win_width = vim.api.nvim_win_get_width(related_win_id)
-        local win_height = vim.api.nvim_win_get_height(related_win_id)
+        local ui = vim.api.nvim_list_uis()[1]
+        local width = fm_globals.round(ui.width * 0.9)
+        local height = fm_globals.round(ui.height * 0.8)
 
         local win_options = {
-            relative = 'win',
-            win = related_win_id,
-            width = win_width,
-            height = win_height,
-            row = 0,
-            col = 0,
+            relative = 'editor',
+            width = width,
+            height = height,
+            col = (ui.width - width) * 0.5,
+            row = (ui.height - height) * 0.2,
             anchor = 'NW',
             style = 'minimal',
+            border = 'rounded',
+            title = ' Help ',
+            title_pos = 'center',
             noautocmd = true,
         }
 
@@ -285,13 +289,21 @@ function M.create_help_popup(related_win_id)
         vim.keymap.set('n', 'q', popup.close_navigation, state.buffer_options)
 
         fmTheming.add_help_popup_theming(state)
-
         popup.set_buffer_content(buf_content)
-
         fmTheming.theme_help_content(state)
     end
 
     init()
+
+    local function resize_window()
+        popup:close_navigation()
+        init()
+    end
+
+    vim.api.nvim_create_autocmd("VimResized", {
+        buffer = state.buf_id,
+        callback = resize_window
+    })
 end
 
 return M

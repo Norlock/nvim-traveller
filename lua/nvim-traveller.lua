@@ -1,27 +1,29 @@
 local NavigationState = require("fm-navigation")
-local fm_theming = require("fm-theming")
 local fm_globals = require("fm-globals")
-local fm_popup = require("fm-popup")
-local fm_plugin = require("fm-plugin-telescope")
 
 local state = NavigationState
 local M = {}
 
 function M.close_navigation()
-    state:close_navigation()
+    if state.is_initialized then
+        state:close_navigation()
+    end
 end
 
-function M.open_navigation(options)
-    state = NavigationState:new(options)
-    state:open_navigation()
-end
+function M.open_navigation()
+    local function is_open()
+        return vim.api.nvim_get_current_buf() == state.buf_id
+    end
 
-function M.open_navigation_as_buffer(dir_path)
-    state = NavigationState:new({
-        as_popup = false,
-        dir_path = dir_path
-    })
-    state:open_navigation()
+    if state.is_initialized then
+        if not is_open() then
+            state:init()
+            state:open_navigation()
+        end
+    else
+        state = NavigationState:new()
+        state:open_navigation()
+    end
 end
 
 function M.setup(options)
@@ -33,7 +35,7 @@ function M.setup(options)
 
         if fn == "" then
             vim.api.nvim_create_autocmd("VimEnter", {
-                callback = function() M.open_navigation_as_buffer(nil) end
+                callback = M.open_navigation
             })
         end
     end

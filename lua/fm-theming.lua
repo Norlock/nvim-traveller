@@ -29,6 +29,7 @@ function theming.add_info_popup_theming(state)
 end
 
 function theming.add_help_popup_theming(state)
+    vim.api.nvim_set_hl(theming.help_ns_id, 'FloatBorder', {})
     vim.api.nvim_set_hl(theming.help_ns_id, 'NormalFloat', {})
     vim.api.nvim_win_set_hl_ns(state.win_id, theming.help_ns_id)
 end

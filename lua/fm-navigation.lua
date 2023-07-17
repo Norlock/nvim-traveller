@@ -11,13 +11,33 @@ local function create_event(dir_path, item_name)
     }
 end
 
-local NavigationState = {}
+---@class NavigationState
+---@field win_id number
+---@field parent_buf_id number
+---@field buf_id number
+---@field dir_path string
+---@field show_hidden boolean
+---@field is_initialized boolean
+---@field history table
+---@field buf_content table
+local NavigationState = {
+    is_initialized = false
+}
 
+---comment
+---@param options any
+---@return NavigationState
 function NavigationState:new(options)
     local o = {}
     setmetatable(o, self)
     self.__index = self
 
+    o:init(options)
+
+    return o
+end
+
+function NavigationState:init(options)
     local function get_dir_path()
         local fd = vim.fn.expand('%:p:h')
         if vim.fn.isdirectory(fd) == 1 then
@@ -27,48 +47,42 @@ function NavigationState:new(options)
         end
     end
 
-    o.parent_buf_id = vim.api.nvim_get_current_buf()
-    o.buf_id = vim.api.nvim_create_buf(false, true)
-    o.as_popup = options.as_popup or true
-    o.dir_path = options.dir_path or get_dir_path()
-    o.show_hidden = true
-    o.is_open = false
-    o.history = {}
+    options = options or {}
 
-    return o
+    self.parent_buf_id = options.parent_buf_id or vim.api.nvim_get_current_buf()
+    self.dir_path = options.dir_path or get_dir_path()
+    self.win_id = vim.api.nvim_get_current_win()
+    self.buf_id = vim.api.nvim_create_buf(false, true)
+    self.show_hidden = true
+    self.is_open = false
+    self.is_initialized = true
+    self.history = {}
+    self.buf_content = {}
 end
 
-function NavigationState.create_help_popup(self)
+function NavigationState:create_help_popup()
     fm_popup.create_help_popup(self.win_id)
 end
 
-function NavigationState.toggle_hidden(self)
+function NavigationState:toggle_hidden()
     self.show_hidden = not self.show_hidden
-    self:reload()
+    self:reload_buffer()
 end
 
-function NavigationState.restore(self)
-    self.parent_buf_id = vim.api.nvim_get_current_buf()
-    self.buf_id = vim.api.nvim_create_buf(false, true)
-    self.is_open = false
-end
-
-function NavigationState.close_navigation(self)
-    if self.is_popup then
-        fm_globals.close_window(self)
+function NavigationState:close_navigation()
+    local parent_buffer_file = vim.api.nvim_buf_get_name(self.parent_buf_id)
+    fm_globals.debug(parent_buffer_file)
+    if parent_buffer_file ~= ""  then
+        vim.api.nvim_set_current_buf(self.parent_buf_id)
     end
 end
 
-function NavigationState.get_cursor_item(self)
+function NavigationState:get_cursor_item()
     local cursor = vim.api.nvim_win_get_cursor(self.win_id)
     return self.buf_content[cursor[1]]
 end
 
-function NavigationState.set_buffer_content(self, new_dir_path)
-    fm_globals.debug('self')
-    fm_globals.debug(self)
-    fm_globals.debug('path')
-    fm_globals.debug(new_dir_path)
+function NavigationState:set_buffer_content(new_dir_path)
     assert(fm_globals.is_item_directory(new_dir_path), "Passed path is not a directory")
 
     local function get_buffer_content()
@@ -115,11 +129,18 @@ function NavigationState.set_buffer_content(self, new_dir_path)
     vim.cmd("nohlsearch")
 end
 
-function NavigationState.reload(self)
+function NavigationState:reload_buffer()
     self:set_buffer_content(self.dir_path)
 end
 
-function NavigationState.navigate_to_parent(self)
+---@param self NavigationState
+---@param dir_path string
+function NavigationState:reload_navigation(dir_path)
+    self:init({dir_path = dir_path, parent_buf_id = self.parent_buf_id })
+    self:open_navigation()
+end
+
+function NavigationState:navigate_to_parent()
     if self.dir_path == "/" then
         return
     end
@@ -169,7 +190,7 @@ function NavigationState.navigate_to_parent(self)
     self:set_buffer_content(parent_event.dir_path)
 end
 
-function NavigationState.open_navigation(self)
+function NavigationState:open_navigation()
     vim.api.nvim_create_autocmd("BufEnter", {
         buffer = self.parent_buf_id,
         callback = function()
@@ -231,32 +252,9 @@ function NavigationState.open_navigation(self)
     -- Needs to happen here before new buffer gets loaded
     local fn = vim.fn.expand('%:t')
 
-    if self.as_popup then
-        local ui = vim.api.nvim_list_uis()[1]
-        local width = fm_globals.round(ui.width * 0.9)
-        local height = fm_globals.round(ui.height * 0.8)
+    self.win_id = vim.api.nvim_get_current_win()
 
-        local options = {
-            relative = 'editor',
-            width = width,
-            height = height,
-            col = (ui.width - width) * 0.5,
-            row = (ui.height - height) * 0.2,
-            anchor = 'NW',
-            style = 'minimal',
-            border = 'rounded',
-            title = ' File manager (help: ?) ',
-            title_pos = 'center',
-        }
-
-        self.win_id = vim.api.nvim_open_win(self.buf_id, true, options)
-        self.is_open = true;
-        self.is_popup = true
-    else
-        self.win_id = 0
-        vim.api.nvim_set_current_buf(self.buf_id)
-        self.is_popup = false
-    end
+    vim.api.nvim_set_current_buf(self.buf_id)
 
     vim.api.nvim_win_set_option(self.win_id, 'relativenumber', true)
     fm_theming.add_theming(self)
@@ -266,7 +264,7 @@ function NavigationState.open_navigation(self)
     local function confirm_callback(popup, sh_cmd)
         fm_globals.debug('mv cmd: ' .. sh_cmd)
         local output = vim.fn.systemlist(sh_cmd .. fm_globals.only_stderr)
-        self:reload()
+        self:reload_buffer()
         popup.close_navigation()
 
         if #output ~= 0 then
@@ -298,7 +296,7 @@ function NavigationState.open_navigation(self)
                 fm_globals.debug(output)
                 confirm_callback(popup, popup.create_mv_cmd(item_name, "mv"))
             else
-                self:reload()
+                self:reload_buffer()
                 popup.close_navigation()
             end
         end
@@ -368,7 +366,6 @@ function NavigationState.open_navigation(self)
     vim.keymap.set('n', 'ff', function() fm_telescope.find_files(self) end, buffer_options)
     vim.keymap.set('n', 'fg', function() fm_telescope.live_grep(self) end, buffer_options)
     vim.keymap.set('n', 'fd', function()
-        self:close_navigation()
         fm_telescope.global_search(self)
     end, buffer_options)
 
@@ -376,7 +373,7 @@ function NavigationState.open_navigation(self)
         table.insert(self.history, create_event(self.dir_path, fn))
     end
 
-    self:reload()
+    self:reload_buffer()
 end
 
 return NavigationState

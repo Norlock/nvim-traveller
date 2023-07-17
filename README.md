@@ -31,6 +31,8 @@ https://github.com/Norlock/nvim-traveller/assets/7510943/44c0982d-0cb9-479f-823e
 - [x] Telescope integration in directory
 - [x] Change cd to git root if possible
 - [x] Navigate to home directory hotkey
+- [ ] Resize windows if needed
+- [ ] Help menu in popup
 - [ ] Docs
 - [ ] FZF/(Other fuzzy file searcher)  if there is demand for it
 - [ ] Being able to pass stringed cmds "test file.lua"
