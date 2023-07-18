@@ -51,7 +51,8 @@ function M.sanitize(str)
 end
 
 function M.item_is_part_of_git_repo(dir_path, item)
-    local sh_cmd = "cd " .. M.sanitize(dir_path) .. " && git ls-files --error-unmatch " .. M.sanitize(item) .. M.only_stderr
+    local sh_cmd = "cd " ..
+    M.sanitize(dir_path) .. " && git ls-files --error-unmatch " .. M.sanitize(item) .. M.only_stderr
     return #vim.fn.systemlist(sh_cmd) == 0
 end
 
@@ -78,6 +79,13 @@ end
 
 function M.get_home_directory()
     return vim.fn.expand("$HOME") .. "/"
+end
+
+function M.concat_table(target, other)
+    for i = 1, #other do
+        target[#target + 1] = other[i]
+    end
+    return target
 end
 
 return M

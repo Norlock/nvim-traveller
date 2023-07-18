@@ -256,10 +256,14 @@ function M.create_help_popup()
         " [v]                       Open file as vsplit",
         " [=]                       Open terminal in tab",
         " [c]                       Create items (e.g.: test.lua lua/ lua/some_file.lua)",
-        " [dd]                      Delete item",
+        " [dd]                      Delete item / Delete selection",
         " [m]                       Move or rename item (e.g.: .. will move to parent)",
         " [f]                       Toggle telescope find_files inside directory",
         " [a]                       Toggle telescope live_grep inside directory",
+        " [y]                       Yank item (add/remove to selection)",
+        " [pm]                      Paste as move",
+        " [pc]                      Paste as copy",
+        " [u]                       Undo selection",
     }
 
     local function init()

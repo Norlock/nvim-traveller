@@ -34,10 +34,18 @@ function theming.add_help_popup_theming(state)
     vim.api.nvim_win_set_hl_ns(state.win_id, theming.help_ns_id)
 end
 
+---Themes the buffer
+---@param state NavigationState
 function theming.theme_buffer_content(state)
-    for i, buf_dir_name in ipairs(state.buf_content) do
-        if fmGlobals.is_item_directory(buf_dir_name) then
+    vim.api.nvim_buf_clear_namespace(state.buf_id, theming.ns_id, 0, -1)
+
+    for i, item_name in ipairs(state.buf_content) do
+        if fmGlobals.is_item_directory(item_name) then
             vim.api.nvim_buf_add_highlight(state.buf_id, theming.ns_id, "Directory", i - 1, 0, -1)
+        end
+
+        if state:is_selected(item_name) then
+            vim.api.nvim_buf_add_highlight(state.buf_id, theming.ns_id, "PmenuSel", i - 1, 0, -1)
         end
     end
 end

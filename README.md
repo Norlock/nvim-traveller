@@ -28,12 +28,13 @@ https://github.com/Norlock/nvim-traveller/assets/7510943/44c0982d-0cb9-479f-823e
 - [x] Toggle hidden files
 - [x] Use git rm if possible
 - [x] Use git mv if possible
-- [ ] Being able to select items
+- [x] Being able to select items
+- [ ] Selection feedback window in the bottom
 - [x] Telescope integration in directory
 - [x] Change cd to git root if possible
 - [x] Navigate to home directory hotkey
-- [ ] Resize windows if needed
- - [ ] Create min width / min height
+- [x] Resize windows if needed
+  - [ ] Create min width / min height
 - [x] Help menu in popup
 - [ ] Custom keymapping
 - [ ] Custom directory for telescope global search
