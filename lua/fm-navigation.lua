@@ -61,7 +61,7 @@ function NavigationState:init(options)
 end
 
 function NavigationState:create_help_popup()
-    fm_popup.create_help_popup(self.win_id)
+    fm_popup:create_help_popup()
 end
 
 function NavigationState:toggle_hidden()
@@ -71,8 +71,8 @@ end
 
 function NavigationState:close_navigation()
     local parent_buffer_file = vim.api.nvim_buf_get_name(self.parent_buf_id)
-    fm_globals.debug(parent_buffer_file)
-    if parent_buffer_file ~= ""  then
+
+    if parent_buffer_file ~= "" then
         vim.api.nvim_set_current_buf(self.parent_buf_id)
     end
 end
@@ -136,7 +136,7 @@ end
 ---@param self NavigationState
 ---@param dir_path string
 function NavigationState:reload_navigation(dir_path)
-    self:init({dir_path = dir_path, parent_buf_id = self.parent_buf_id })
+    self:init({ dir_path = dir_path, parent_buf_id = self.parent_buf_id })
     self:open_navigation()
 end
 
@@ -330,7 +330,7 @@ function NavigationState:open_navigation()
         local sh_cmd = create_sh_cmd()
         fm_globals.debug("delete: " .. sh_cmd)
 
-        local popup = fm_popup.create_delete_item_popup({ sh_cmd }, self.win_id)
+        local popup = fm_popup:create_delete_item_popup({ sh_cmd }, self.win_id)
 
         local function confirm_delete_callback()
             confirm_callback(popup, sh_cmd)
@@ -354,7 +354,7 @@ function NavigationState:open_navigation()
     vim.keymap.set('n', '=', open_terminal, buffer_options)
     vim.keymap.set('n', 'c', create_item_popup, buffer_options)
     vim.keymap.set('n', 'm', create_move_popup, buffer_options)
-    vim.keymap.set('n', 'd', delete_item, buffer_options)
+    vim.keymap.set('n', 'dd', delete_item, buffer_options)
     vim.keymap.set('n', '<F1>', "", buffer_options)
     vim.keymap.set('n', '<Left>', function() self:navigate_to_parent() end, buffer_options)
     vim.keymap.set('n', 'h', function() self:navigate_to_parent() end, buffer_options)
@@ -363,11 +363,8 @@ function NavigationState:open_navigation()
     vim.keymap.set('n', '~', navigate_to_home_directory, buffer_options)
 
     -- Plugin integration
-    vim.keymap.set('n', 'ff', function() fm_telescope.find_files(self) end, buffer_options)
-    vim.keymap.set('n', 'fg', function() fm_telescope.live_grep(self) end, buffer_options)
-    vim.keymap.set('n', 'fd', function()
-        fm_telescope.global_search(self)
-    end, buffer_options)
+    vim.keymap.set('n', 'f', function() fm_telescope:find_files(self) end, buffer_options)
+    vim.keymap.set('n', 'g', function() fm_telescope:live_grep(self) end, buffer_options)
 
     if fn ~= "" then
         table.insert(self.history, create_event(self.dir_path, fn))

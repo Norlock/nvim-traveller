@@ -1,7 +1,6 @@
 local fm_globals = require("fm-globals")
 
 local M = {}
-local a = vim.api
 
 local function init()
     if not package.loaded["telescope"] then
@@ -20,8 +19,8 @@ end
 init()
 
 ---@param state NavigationState
-function M.find_files(state)
-    if M.builtin == nil then
+function M:find_files(state)
+    if self.builtin == nil then
         return
     end
 
@@ -29,19 +28,17 @@ function M.find_files(state)
 end
 
 ---@param state NavigationState
-function M.live_grep(state)
-    if M.builtin == nil then
+function M:live_grep(state)
+    if self.builtin == nil then
         return
     end
 
-    M.builtin.live_grep({ cwd = state.dir_path })
+    self.builtin.live_grep({ cwd = state.dir_path })
 end
 
 ---@param state NavigationState
-function M.global_search(state)
-    local function attach_mappings(prompt_bufnr, map)
-        fm_globals.debug(map)
-
+function M:global_search(state)
+    local function attach_mappings(_, _)
         local actions = M.actions
         local action_state = M.action_state
 
@@ -60,7 +57,6 @@ function M.global_search(state)
 
             actions.close(opts)
 
-            -- TODO verplaatsen
             state:reload_navigation(selection[1])
         end)
 
@@ -74,7 +70,7 @@ function M.global_search(state)
         attach_mappings = attach_mappings,
     }
 
-    M.pickers.new(opts, {
+    self.pickers.new(opts, {
         prompt_title = "Directories",
         finder = M.finders.new_oneshot_job({ "fd", "-t", "directory", ".", home_dir }),
         sorter = M.config.file_sorter(opts),

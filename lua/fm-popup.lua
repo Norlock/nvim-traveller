@@ -169,8 +169,8 @@ end
 
 local M = {}
 
-function M.create_delete_item_popup(buf_content, parent_win_id)
-    return M.create_info_popup(buf_content, parent_win_id,
+function M:create_delete_item_popup(buf_content, parent_win_id)
+    return self.create_info_popup(buf_content, parent_win_id,
         'Confirm (Enter), cancel (Esc / q)')
 end
 
@@ -237,7 +237,7 @@ function M.create_info_popup(buf_content, related_win_id, title)
     return popup
 end
 
-function M.create_help_popup(related_win_id)
+function M.create_help_popup()
     local popup, state = mod_builder.info_variant()
 
     local buf_content = {
@@ -245,8 +245,8 @@ function M.create_help_popup(related_win_id)
         " ",
         " [h / <Left>]              Navigate to parent",
         " [l / <Right> / <Cr>]      Navigate to directory or open item",
-        " [q / <Esc>]               Close popup",
-        " [<A-.>]                       Toggle hidden or all files",
+        " [q / <Esc>]               Close popup / navigation",
+        " [<A-.>]                   Toggle hidden or all files",
         " [~]                       Navigate to home directory",
         " ",
         " -- Commands",
@@ -256,10 +256,10 @@ function M.create_help_popup(related_win_id)
         " [v]                       Open file as vsplit",
         " [=]                       Open terminal in tab",
         " [c]                       Create items (e.g.: test.lua lua/ lua/some_file.lua)",
-        " [d]                       Delete item",
+        " [dd]                      Delete item",
         " [m]                       Move or rename item (e.g.: .. will move to parent)",
-        " [f]                       Toggle telescope find_files with directory at cursor",
-        " [a]                       Toggle telescope live_grep with directory at cursor",
+        " [f]                       Toggle telescope find_files inside directory",
+        " [a]                       Toggle telescope live_grep inside directory",
     }
 
     local function init()

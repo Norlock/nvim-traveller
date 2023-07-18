@@ -1,5 +1,6 @@
 local NavigationState = require("fm-navigation")
 local fm_globals = require("fm-globals")
+local fm_telescope = require("fm-plugin-telescope")
 
 local state = NavigationState
 local M = {}
@@ -24,6 +25,14 @@ function M.open_navigation()
         state = NavigationState:new()
         state:open_navigation()
     end
+end
+
+function M.open_telescope_search()
+    if not state.is_initialized then
+        state = NavigationState:new()
+    end
+
+	fm_telescope:global_search(state)
 end
 
 function M.setup(options)

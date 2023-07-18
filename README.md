@@ -28,15 +28,19 @@ https://github.com/Norlock/nvim-traveller/assets/7510943/44c0982d-0cb9-479f-823e
 - [x] Toggle hidden files
 - [x] Use git rm if possible
 - [x] Use git mv if possible
+- [ ] Being able to select items
 - [x] Telescope integration in directory
 - [x] Change cd to git root if possible
 - [x] Navigate to home directory hotkey
 - [ ] Resize windows if needed
-- [ ] Help menu in popup
-- [ ] Docs
-- [ ] FZF/(Other fuzzy file searcher)  if there is demand for it
-- [ ] Being able to pass stringed cmds "test file.lua"
-- [ ] Support for Windows (if there is demand for it)
+ - [ ] Create min width / min height
+- [x] Help menu in popup
+- [ ] Custom keymapping
+- [ ] Custom directory for telescope global search
+- [x] Docs
+- [ ] Optional: FZF/(Other fuzzy file searcher)  if there is demand for it
+- [ ] Optional: being able to pass stringed cmds "test file.lua"
+- [ ] Optional: Support for Windows (if there is demand for it)
 
 ## Startup
 
@@ -62,12 +66,15 @@ local traveller = require('nvim-traveller')
 -- sync_cwd flag is useful for plugin compatibility if you work with multiple projects
 traveller.setup({ replace_netrw = true, sync_cwd = true })
 
-vim.keymap.set('n', '<leader>o', traveller.open_navigation, {})
+vim.keymap.set('n', '-', traveller.open_navigation, {})
+
+-- Really fast navigation through home directory
+vim.keymap.set('n', '<leader>d', traveller.open_telescope_search, silent_options) 
 ```
 
 Viml:
 ```viml
-nnoremap <leader>o <cmd>lua require('nvim-traveller').open_navigation()<cr>
+nnoremap - <cmd>lua require('nvim-traveller').open_navigation()<cr>
 ```
 
 - When navigation is openend press ? for more info

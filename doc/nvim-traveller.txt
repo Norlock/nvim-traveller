@@ -1,0 +1,34 @@
+Nvim-traveller - *traveller*
+
+A file manager made for multiproject purpose, so you don't have to close your neovim instance. 
+
+Problem:
+1 - 
+You are working on a project with a frontend and backed. You find out that you
+need an extra field in your api call response, what do you do? Most people will
+open another terminal or tmux window and (cd/fzf/z) to the directory they need
+to go. Than they open neovim with the name of the file. 
+
+Already you are spending mental capacity trying to navigate to that other
+project. You also can't use the buffer of each other session (unless you use
+something like nvr), if you just for example want to copy some fields or
+function names.
+
+2 - 
+You navigated to some directory and realised you want to tail the log file
+there. Opening a terminal and jump towards the same directory is taking time and
+mental resources.
+
+Solution:
+Use the telescope directory search customization by Nvim-traveller. Open the
+terminal (=) or press f/a to start the fuzzy search. Nvim-traveller will
+automatically update cwd to the current file, so all your plugins work.
+
+Help - *traveller-help*
+
+To see help press "?" after openning the navigation buffer.
+
+Github - *traveller-github*
+
+For more information navigate to:
+https://github.com/Norlock/nvim-traveller
