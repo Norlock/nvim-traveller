@@ -6,8 +6,9 @@ local state = {}
 local M = {}
 
 ---@class ModOptions
----@field sync_cwd boolean
----@field replace_netrw boolean
+---@field sync_cwd boolean sync working directory if project in git repository (default is false)
+---@field replace_netrw boolean replace netrw on startup (default is false)
+---@field show_hidden boolean show hidden by default or not (default is true)
 local ModOptions = {}
 
 function M.close_navigation()

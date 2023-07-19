@@ -1,59 +1,74 @@
 local fmGlobals = require("fm-globals")
 
-local theming = {
-    ns_id = vim.api.nvim_create_namespace("FmTheming"),
-    popup_ns_id = vim.api.nvim_create_namespace("FmInfoTheming"),
-    help_ns_id = vim.api.nvim_create_namespace("FmHelpTheming")
+local M = {
+    navigation_ns_id = vim.api.nvim_create_namespace("Traveller"),
+    popup_ns_id = vim.api.nvim_create_namespace("TravellerInfo"),
+    help_ns_id = vim.api.nvim_create_namespace("TravellerHelp")
 }
 
-function theming.add_theming(state)
-    vim.opt_local.cursorline = true
+---@param state NavigationState
+function M.add_theming(state)
+    vim.opt.cursorline = true
+    vim.api.nvim_create_autocmd("BufEnter", {
+        buffer = state.buf_id,
+        callback = function()
+            vim.opt_local.cursorline = true
+        end
+    })
 
-    vim.api.nvim_set_hl(theming.ns_id, 'Normal', {})
-    vim.api.nvim_set_hl(theming.ns_id, 'FloatBorder', {})
-    vim.api.nvim_set_hl(theming.ns_id, 'CursorLine', { bold = true })
+    vim.api.nvim_create_autocmd("BufHidden", {
+        buffer = state.buf_id,
+        callback = function()
+            vim.opt_local.cursorline = false
+            vim.api.nvim_win_set_hl_ns(state.win_id, 0)
+        end
+    })
 
-    vim.api.nvim_win_set_hl_ns(state.win_id, theming.ns_id)
+    local cursor_line_hl = vim.api.nvim_get_hl(0, { name = 'CursorLine' })
+    cursor_line_hl.bold = true
+
+    vim.api.nvim_set_hl(M.navigation_ns_id, 'CursorLine', cursor_line_hl)
+    vim.api.nvim_win_set_hl_ns(state.win_id, M.navigation_ns_id)
 end
 
-function theming.add_info_popup_theming(state)
+function M.add_info_popup_theming(state)
     local hlBorder = {
         link = "Question",
     }
 
-    vim.api.nvim_set_hl(theming.popup_ns_id, 'FloatBorder', hlBorder)
-    vim.api.nvim_set_hl(theming.popup_ns_id, 'FloatTitle', hlBorder)
-    vim.api.nvim_set_hl(theming.popup_ns_id, 'NormalFloat', { italic = true })
+    vim.api.nvim_set_hl(M.popup_ns_id, 'FloatBorder', hlBorder)
+    vim.api.nvim_set_hl(M.popup_ns_id, 'FloatTitle', hlBorder)
+    vim.api.nvim_set_hl(M.popup_ns_id, 'NormalFloat', { italic = true })
 
-    vim.api.nvim_win_set_hl_ns(state.win_id, theming.popup_ns_id)
+    vim.api.nvim_win_set_hl_ns(state.win_id, M.popup_ns_id)
 end
 
-function theming.add_help_popup_theming(state)
-    vim.api.nvim_set_hl(theming.help_ns_id, 'FloatBorder', {})
-    vim.api.nvim_set_hl(theming.help_ns_id, 'NormalFloat', {})
-    vim.api.nvim_win_set_hl_ns(state.win_id, theming.help_ns_id)
+function M.add_help_popup_theming(state)
+    vim.api.nvim_set_hl(M.help_ns_id, 'FloatBorder', {})
+    vim.api.nvim_set_hl(M.help_ns_id, 'NormalFloat', {})
+    vim.api.nvim_win_set_hl_ns(state.win_id, M.help_ns_id)
 end
 
 ---Themes the buffer
 ---@param state NavigationState
-function theming.theme_buffer_content(state)
-    vim.api.nvim_buf_clear_namespace(state.buf_id, theming.ns_id, 0, -1)
+function M.theme_buffer_content(state)
+    vim.api.nvim_buf_clear_namespace(state.buf_id, M.navigation_ns_id, 0, -1)
 
     for i, item_name in ipairs(state.buf_content) do
         if fmGlobals.is_item_directory(item_name) then
-            vim.api.nvim_buf_add_highlight(state.buf_id, theming.ns_id, "Directory", i - 1, 0, -1)
+            vim.api.nvim_buf_add_highlight(state.buf_id, M.navigation_ns_id, "Directory", i - 1, 0, -1)
         end
 
         if state:is_selected(item_name) then
-            vim.api.nvim_buf_add_highlight(state.buf_id, theming.ns_id, "PmenuSel", i - 1, 0, -1)
+            vim.api.nvim_buf_add_highlight(state.buf_id, M.navigation_ns_id, "PmenuSel", i - 1, 0, -1)
         end
     end
 end
 
-function theming.theme_help_content(state)
+function M.theme_help_content(state)
     local function add_hl(hl_group, i, col_start, col_end)
         vim.api.nvim_buf_add_highlight(
-            state.buf_id, theming.help_ns_id, hl_group, i - 1, col_start, col_end
+            state.buf_id, M.help_ns_id, hl_group, i - 1, col_start, col_end
         )
     end
 
@@ -98,4 +113,4 @@ function theming.theme_help_content(state)
     end
 end
 
-return theming
+return M

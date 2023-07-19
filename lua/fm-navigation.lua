@@ -60,7 +60,7 @@ function NavigationState:init(options)
     self.dir_path = options.dir_path or get_dir_path()
     self.win_id = vim.api.nvim_get_current_win()
     self.buf_id = vim.api.nvim_create_buf(false, true)
-    self.show_hidden = true
+    self.show_hidden = self.show_hidden or self.show_hidden == nil
     self.is_open = false
     self.is_initialized = true
     self.history = {}
@@ -151,8 +151,7 @@ end
 ---@param item_name string
 ---@return boolean
 function NavigationState:is_selected(item_name)
-    local sel = self:get_selection_index(item_name)
-    return sel ~= -1
+    return self:get_selection_index(item_name) ~= -1
 end
 
 ---Checks if in selection
@@ -312,7 +311,6 @@ function NavigationState:open_navigation()
             end
         else
             local file_rel = path:new(self.dir_path .. item):make_relative()
-            self:close_navigation()
             vim.cmd(cmd_str .. ' ' .. file_rel)
         end
     end
