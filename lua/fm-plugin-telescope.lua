@@ -47,7 +47,6 @@ function M:global_search(state)
         actions.select_vertical:replace(function() end)
         actions.select_horizontal:replace(function() end)
 
-        -- TODO replace close function for the other ones
         actions.select_default:replace(function(opts)
             local selection = action_state.get_selected_entry()
 

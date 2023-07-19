@@ -19,7 +19,6 @@ local mod_options = {}
 
 ---@class NavigationState
 ---@field win_id number
----@field parent_buf_id number
 ---@field buf_id number
 ---@field dir_path string
 ---@field show_hidden boolean
@@ -44,7 +43,6 @@ function NavigationState:new(options)
     return o
 end
 
----comment
 ---@param opts ModOptions
 function NavigationState:set_mod_options(opts)
     mod_options = opts
@@ -62,7 +60,6 @@ function NavigationState:init(options)
 
     options = options or {}
 
-    self.parent_buf_id = options.parent_buf_id or vim.api.nvim_get_current_buf()
     self.dir_path = options.dir_path or get_dir_path()
     self.win_id = vim.api.nvim_get_current_win()
     self.buf_id = vim.api.nvim_create_buf(false, true)
@@ -168,10 +165,12 @@ function NavigationState:get_selection_index(item_name)
 end
 
 function NavigationState:close_navigation()
-    local parent_buffer_file = vim.api.nvim_buf_get_name(self.parent_buf_id)
+    local all_bufs = vim.api.nvim_list_bufs()
 
-    if parent_buffer_file ~= "" then
-        vim.api.nvim_set_current_buf(self.parent_buf_id)
+    for _, buf_id in pairs(all_bufs) do
+        if vim.fn.buflisted(buf_id) == 1 then
+            vim.api.nvim_buf_delete(self.buf_id, {})
+        end
     end
 end
 
@@ -235,7 +234,7 @@ end
 ---@param self NavigationState
 ---@param dir_path string
 function NavigationState:reload_navigation(dir_path)
-    self:init({ dir_path = dir_path, parent_buf_id = self.parent_buf_id, selection = self.selection })
+    self:init({ dir_path = dir_path, selection = self.selection })
     self:open_navigation()
 end
 
@@ -289,13 +288,6 @@ function NavigationState:open_navigation()
         vim.cmd("cd " .. self.dir_path)
     end
 
-    vim.api.nvim_create_autocmd("BufEnter", {
-        buffer = self.parent_buf_id,
-        callback = function()
-            self:close_navigation()
-        end
-    })
-
     local function action_on_item(cmd_str)
         local item = self:get_cursor_item()
 
@@ -320,12 +312,14 @@ function NavigationState:open_navigation()
 
     -- Needs to happen here before new buffer gets loaded
     local fn = vim.fn.expand('%:t')
+    local buffer = vim.api.nvim_get_current_buf()
 
-    self.win_id = vim.api.nvim_get_current_win()
+    vim.api.nvim_win_set_buf(self.win_id, self.buf_id)
 
-    vim.api.nvim_set_current_buf(self.buf_id)
+    if fn == "" then -- file doesn't exist
+        vim.api.nvim_buf_delete(buffer, {})
+    end
 
-    vim.api.nvim_win_set_option(self.win_id, 'relativenumber', true)
     fm_theming.add_theming(self)
 
     local buffer_options = { silent = true, buffer = self.buf_id }
