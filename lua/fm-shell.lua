@@ -22,6 +22,7 @@ end
 ---@return string[]
 function M:create_mv_cmds_selection(state)
     local sh_cmds = {}
+
     -- TODO try to use git mv cmd as well
     for _, event in pairs(state.selection) do
         local sanitize_src = fm_globals.sanitize(event.dir_path .. event.item_name)

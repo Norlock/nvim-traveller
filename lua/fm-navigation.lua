@@ -202,6 +202,11 @@ function NavigationState:set_buffer_content(new_dir_path)
     end
 
     self.dir_path = new_dir_path
+
+    if mod_options.sync_cwd then
+        vim.cmd("cd " .. self.dir_path)
+    end
+
     self.buf_content = get_buffer_content()
 
     vim.api.nvim_buf_set_option(self.buf_id, 'modifiable', true)
@@ -284,10 +289,6 @@ function NavigationState:navigate_to_parent()
 end
 
 function NavigationState:open_navigation()
-    if mod_options.sync_cwd then
-        vim.cmd("cd " .. self.dir_path)
-    end
-
     local function action_on_item(cmd_str)
         local item = self:get_cursor_item()
 
