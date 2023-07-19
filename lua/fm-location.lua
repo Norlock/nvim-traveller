@@ -1,13 +1,13 @@
----@class Event
+---@class Location
 ---@field dir_path string
 ---@field item_name string
-local Event = {}
+local Location = {}
 
 ---Create new event
 ---@param dir_path string
 ---@param item_name string
----@return Event
-function Event:new(dir_path, item_name)
+---@return Location
+function Location:new(dir_path, item_name)
     local o = {}
     setmetatable(o, self)
     self.__index = self
@@ -18,4 +18,4 @@ function Event:new(dir_path, item_name)
     return o
 end
 
-return Event
+return Location

@@ -1,244 +1,203 @@
 local fm_globals = require("fm-globals")
-local fmTheming = require("fm-theming")
+local fm_theming = require("fm-theming")
+local fm_shell = require("fm-shell")
 
-local function popup_module_builder()
-    local function create_module()
-        local buf_id = vim.api.nvim_create_buf(false, true)
+---@class Popup
+---@field win_id integer
+---@field buf_id integer
+---@field buf_content string[]
+---@field buffer_options table
+local Popup = {}
 
-        -- TODO refactor similar to navigation state
-        local state = {
-            buf_id = buf_id,
-            buf_content = {},
-            is_open = false,
-            buffer_options = { silent = true, buffer = buf_id }
-        }
+---comment
+---@return Popup
+function Popup:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
 
-        local popup = { state = state }
+    local buf_id = vim.api.nvim_create_buf(false, true)
+    o.buf_id = buf_id
+    o.buf_content = {}
+    o.buffer_options = { silent = true, buffer = buf_id }
 
-        function popup.close_navigation()
-            fm_globals.close_window(state)
+    return o
+end
+
+function Popup:close_navigation()
+    if vim.api.nvim_win_is_valid(self.win_id) then
+        vim.api.nvim_win_close(self.win_id, false)
+    end
+end
+
+function Popup:set_keymap(mode, lhs, rhs)
+    vim.keymap.set(mode, lhs, rhs, self.buffer_options)
+end
+
+function Popup:set_buffer_content(buf_content)
+    self.buf_content = buf_content
+
+    vim.api.nvim_buf_set_option(self.buf_id, 'modifiable', true)
+    vim.api.nvim_buf_set_lines(self.buf_id, 0, -1, true, self.buf_content)
+    vim.api.nvim_buf_set_option(self.buf_id, 'modifiable', false)
+end
+
+function Popup:init_cmd_variant(title, buf_content)
+    vim.api.nvim_create_autocmd({ "BufWinLeave", "BufLeave", "BufHidden" }, {
+        buffer = self.buf_id,
+        callback = function()
+            vim.cmd('stopinsert')
+            self:close_navigation()
         end
+    })
 
-        return popup, state
-    end
+    local ui = vim.api.nvim_list_uis()[1]
+    local width = fm_globals.round(ui.width * 0.6)
+    local height = 1
 
-    local function create_info_variant()
-        local popup, state = create_module()
+    local win_options = {
+        relative = 'editor',
+        width = width,
+        height = height,
+        col = fm_globals.round((ui.width - width) * 0.5),
+        row = fm_globals.round((ui.height - height) * 0.2),
+        anchor = 'NW',
+        style = 'minimal',
+        border = 'rounded',
+        title = title,
+        title_pos = 'left',
+        noautocmd = true,
+    }
 
-        vim.api.nvim_create_autocmd({ "BufLeave", "BufHidden" }, {
-            buffer = state.buf_id,
-            callback = popup.close_navigation
-        })
+    vim.api.nvim_buf_set_lines(self.buf_id, 0, -1, true, buf_content)
 
-        function popup.set_buffer_content(buf_content)
-            state.buf_content = buf_content
+    self.win_id = vim.api.nvim_open_win(self.buf_id, true, win_options)
+    fm_theming.add_theming(self)
+end
 
-            vim.api.nvim_buf_set_option(state.buf_id, 'modifiable', true)
-            vim.api.nvim_buf_set_lines(state.buf_id, 0, -1, true, state.buf_content)
-            vim.api.nvim_buf_set_option(state.buf_id, 'modifiable', false)
-        end
-
-        return popup, state
-    end
-
-    local function create_cmd_variant()
-        local popup, state = create_module()
-
-        vim.api.nvim_create_autocmd({ "BufWinLeave", "BufLeave", "BufHidden" }, {
-            buffer = state.buf_id,
-            callback = function()
-                vim.cmd('stopinsert')
-                popup.close_navigation()
-            end
-        })
-
-        return popup, state
-    end
+local function create_help_window_options()
+    local ui = vim.api.nvim_list_uis()[1]
+    local width = fm_globals.round(ui.width * 0.9)
+    local height = fm_globals.round(ui.height * 0.8)
 
     return {
-        info_variant = create_info_variant,
-        cmd_variant = create_cmd_variant,
+        relative = 'editor',
+        width = width,
+        height = height,
+        col = (ui.width - width) * 0.5,
+        row = (ui.height - height) * 0.2,
+        anchor = 'NW',
+        style = 'minimal',
+        border = 'rounded',
+        title = ' Help ',
+        title_pos = 'center',
+        noautocmd = true,
     }
 end
 
-local mod_builder = popup_module_builder()
+local function create_feedback_window_options(related_win_id, title, buf_content)
+    local win_width = vim.api.nvim_win_get_width(related_win_id)
+    local win_height = vim.api.nvim_win_get_height(related_win_id)
+    local height = #buf_content
 
-local function create_cmd_popup(dir_path, title, buf_content)
-    local popup, state = mod_builder.cmd_variant()
+    return {
+        relative = 'win',
+        win = related_win_id,
+        width = win_width,
+        height = height,
+        row = win_height - height - 1,
+        col = -1,
+        anchor = 'NW',
+        style = 'minimal',
+        border = 'single',
+        title = title,
+        title_pos = "right",
+        noautocmd = true,
+    }
+end
 
-    --TODO create fm-shell for shell commands
-    function popup.create_mv_cmd(item_name, mv_cmd)
-        local user_input = vim.api.nvim_buf_get_lines(state.buf_id, 0, 1, false)[1]
-
-        if user_input == nil then
-            return ""
+---@param buf_content string[]
+---@param win_options any
+function Popup:init_info_variant(buf_content, win_options)
+    vim.api.nvim_create_autocmd({ "BufLeave", "BufHidden" }, {
+        buffer = self.buf_id,
+        callback = function()
+            self:close_navigation()
         end
+    })
 
-        local sh_cmd_prefix = table.concat({ "cd", dir_path, "&&", mv_cmd, fm_globals.sanitize(item_name) }, " ")
+    self.win_id = vim.api.nvim_open_win(self.buf_id, true, win_options)
+    self.buffer_options = { silent = true, buffer = self.buf_id }
 
-        local first_two_chars = string.sub(user_input, 1, 2)
-        local first_char = string.sub(first_two_chars, 1, 1)
+    vim.keymap.set('n', '<Esc>', function() self:close_navigation() end, self.buffer_options)
+    vim.keymap.set('n', 'q', function() self:close_navigation() end, self.buffer_options)
 
-        -- Check for absolute path in input
-        if first_char == '/' or first_two_chars == '~/' then
-            local sanitize = fm_globals.sanitize(user_input)
-            return sh_cmd_prefix .. " " .. sanitize
-        else
-            return sh_cmd_prefix .. fm_globals.sanitize(dir_path .. user_input)
-        end
-    end
+    self:set_buffer_content(buf_content)
+end
 
-    function popup.create_new_items_cmd()
-        local user_input = vim.api.nvim_buf_get_lines(state.buf_id, 0, 1, false)
-        local parts = fm_globals.split(user_input[1], " ")
+---@param current_location Location
+---@param mv_cmd mv_cmd
+---@return string
+function Popup:create_mv_cmd(current_location, mv_cmd)
+    local user_input = vim.api.nvim_buf_get_lines(self.buf_id, 0, 1, false)[1]
+    return fm_shell:create_mv_cmd(current_location, user_input, mv_cmd)
+end
 
-        --local cmd = sh_cmd
-        local touch_cmds = {}
-        local mkdir_cmds = {}
-
-        for _, item in ipairs(parts) do
-            if fm_globals.is_item_directory(item) then
-                table.insert(mkdir_cmds, dir_path .. item)
-            else
-                table.insert(touch_cmds, dir_path .. item)
-            end
-        end
-
-        local mkdr_sh_cmd = "mkdir -p"
-        local touch_sh_cmd = "touch"
-        local has_mkdir_cmds = #mkdir_cmds ~= 0
-        local has_touch_cmds = #touch_cmds ~= 0
-
-        if has_mkdir_cmds then
-            for _, item in pairs(mkdir_cmds) do
-                mkdr_sh_cmd = mkdr_sh_cmd .. " " .. item
-            end
-        end
-
-        if has_touch_cmds then
-            for _, item in pairs(touch_cmds) do
-                touch_sh_cmd = touch_sh_cmd .. " " .. item
-            end
-        end
-
-        if has_mkdir_cmds then
-            if has_touch_cmds then
-                return mkdr_sh_cmd .. " && " .. touch_sh_cmd
-            else
-                return mkdr_sh_cmd
-            end
-        else
-            return touch_sh_cmd
-        end
-    end
-
-    local function init()
-        local ui = vim.api.nvim_list_uis()[1]
-        local width = fm_globals.round(ui.width * 0.6)
-        local height = 1
-
-        local win_options = {
-            relative = 'editor',
-            width = width,
-            height = height,
-            col = fm_globals.round((ui.width - width) * 0.5),
-            row = fm_globals.round((ui.height - height) * 0.2),
-            anchor = 'NW',
-            style = 'minimal',
-            border = 'rounded',
-            title = title,
-            title_pos = 'left',
-            noautocmd = true,
-        }
-
-        vim.api.nvim_buf_set_lines(state.buf_id, 0, -1, true, buf_content)
-
-        state.win_id = vim.api.nvim_open_win(state.buf_id, true, win_options)
-        state.is_open = true;
-        fmTheming.add_theming(state)
-    end
-
-    function popup.set_keymap(mode, lhs, rhs)
-        vim.keymap.set(mode, lhs, rhs, state.buffer_options)
-    end
-
-    init()
-
-    return popup
+---@param dir_path string
+---@return string
+function Popup:create_new_items_cmd(dir_path)
+    local user_input = vim.api.nvim_buf_get_lines(self.buf_id, 0, 1, false)
+    return fm_shell.create_new_items_cmd(dir_path, user_input)
 end
 
 local M = {}
 
-function M:create_delete_item_popup(buf_content, parent_win_id)
-    return self.create_info_popup(buf_content, parent_win_id,
-        'Confirm (Enter), cancel (Esc / q)')
+---@param parent_win_id integer
+---@param buf_content string[]
+---@return Popup
+function M.create_delete_item_popup(parent_win_id, buf_content)
+    local popup = Popup:new()
+
+    local title = 'Confirm (Enter), cancel (Esc / q)'
+    local window_options = create_feedback_window_options(parent_win_id, title, buf_content)
+    popup:init_info_variant(buf_content, window_options)
+
+    fm_theming.add_info_popup_theming(popup)
+
+    return popup
 end
 
-function M.create_item_popup(dir_path)
-    local popup = create_cmd_popup(dir_path, ' Create (separate by space) ', {})
+function M.create_items_popup()
+    local popup = Popup:new()
+    popup:init_cmd_variant(' Create (separate by space) ', {})
 
-    popup.set_keymap('i', '<Esc>', popup.close_navigation)
+    popup:set_keymap('i', '<Esc>', function() popup:close_navigation() end)
     vim.cmd("startinsert")
 
     return popup
 end
 
-function M.create_move_popup(dir_path, item_name)
-    local popup = create_cmd_popup(dir_path, ' Move (mv) ', { dir_path .. item_name })
+---comment
+---@param location Location
+---@return Popup
+function M.create_move_popup(location)
+    local popup = Popup:new()
+    popup:init_cmd_variant(' Move (mv) ', { location.dir_path .. location.item_name })
 
-    vim.api.nvim_win_set_cursor(popup.state.win_id, { 1, #dir_path })
-    popup.set_keymap('n', '<Esc>', popup.close_navigation)
-    popup.set_keymap('n', 'q', popup.close_navigation)
-
-    return popup
-end
-
-function M.create_info_popup(buf_content, related_win_id, title)
-    local popup, state = mod_builder.info_variant()
-
-    local function init()
-        local win_width = vim.api.nvim_win_get_width(related_win_id)
-        local win_height = vim.api.nvim_win_get_height(related_win_id)
-        local height = #buf_content
-
-        local win_options = {
-            relative = 'win',
-            win = related_win_id,
-            width = win_width,
-            height = height,
-            row = win_height - height - 1,
-            col = -1,
-            anchor = 'NW',
-            style = 'minimal',
-            border = 'single',
-            title = ' ' .. title .. ' ',
-            title_pos = "right",
-            noautocmd = true,
-        }
-
-        state.win_id = vim.api.nvim_open_win(state.buf_id, true, win_options)
-        state.is_open = true;
-        state.buffer_options = { silent = true, buffer = state.buf_id }
-
-        vim.keymap.set('n', '<Esc>', popup.close_navigation, state.buffer_options)
-        vim.keymap.set('n', 'q', popup.close_navigation, state.buffer_options)
-
-        popup.set_buffer_content(buf_content)
-
-        fmTheming.add_info_popup_theming(state)
-    end
-
-    function popup.set_keymap(lhs, rhs)
-        vim.keymap.set('n', lhs, rhs, state.buffer_options)
-    end
-
-    init()
+    vim.api.nvim_win_set_cursor(popup.win_id, { 1, #location.dir_path })
+    popup:set_keymap('n', '<Esc>', function() popup:close_navigation() end)
+    popup:set_keymap('n', '<Esc>', function() popup:close_navigation() end)
 
     return popup
 end
+
+----@param navigation_state NavigationState
+--function M.create_selection_popup(navigation_state)
+--local popup = Popup:new()
+--end
 
 function M.create_help_popup()
-    local popup, state = mod_builder.info_variant()
+    local popup = Popup:new()
 
     local buf_content = {
         " -- Navigation",
@@ -267,46 +226,20 @@ function M.create_help_popup()
     }
 
     local function init()
-        local ui = vim.api.nvim_list_uis()[1]
-        local width = fm_globals.round(ui.width * 0.9)
-        local height = fm_globals.round(ui.height * 0.8)
-
-        local win_options = {
-            relative = 'editor',
-            width = width,
-            height = height,
-            col = (ui.width - width) * 0.5,
-            row = (ui.height - height) * 0.2,
-            anchor = 'NW',
-            style = 'minimal',
-            border = 'rounded',
-            title = ' Help ',
-            title_pos = 'center',
-            noautocmd = true,
-        }
-
-        state.win_id = vim.api.nvim_open_win(state.buf_id, true, win_options)
-        state.is_open = true;
-        state.buffer_options = { silent = true, buffer = state.buf_id }
-
-        vim.keymap.set('n', '<Esc>', popup.close_navigation, state.buffer_options)
-        vim.keymap.set('n', 'q', popup.close_navigation, state.buffer_options)
-
-        fmTheming.add_help_popup_theming(state)
-        popup.set_buffer_content(buf_content)
-        fmTheming.theme_help_content(state)
+        local window_options = create_help_window_options()
+        popup:init_info_variant(buf_content, window_options)
+        fm_theming.add_help_popup_theming(popup)
+        fm_theming.theme_help_content(popup)
     end
 
     init()
 
-    local function resize_window()
-        popup:close_navigation()
-        init()
-    end
-
     vim.api.nvim_create_autocmd("VimResized", {
-        buffer = state.buf_id,
-        callback = resize_window
+        buffer = popup.buf_id,
+        callback = function()
+            popup:close_navigation()
+            init()
+        end
     })
 end
 

@@ -2,10 +2,27 @@ local fm_globals = require("fm-globals")
 
 local M = {}
 
+
+---@alias mv_cmd 'mv' | 'git mv'
+---@param src_event Location
+---@param dst_str string
+---@param mv_cmd mv_cmd
+---@return string
+function M:create_mv_cmd(src_event, dst_str, mv_cmd)
+    local dir_path = src_event.dir_path
+    local item_name = src_event.item_name
+
+    local sh_cmd_prefix = table.concat({ "cd", dir_path, "&&", mv_cmd, fm_globals.sanitize(item_name) }, " ")
+
+    local sanitize = fm_globals.sanitize(dst_str)
+    return sh_cmd_prefix .. " " .. sanitize
+end
+
 ---@param state NavigationState
 ---@return string[]
 function M:create_mv_cmds_selection(state)
     local sh_cmds = {}
+    -- TODO try to use git mv cmd as well
     for _, event in pairs(state.selection) do
         local sanitize_src = fm_globals.sanitize(event.dir_path .. event.item_name)
         local sanitize_dst = fm_globals.sanitize(state.dir_path)
@@ -71,6 +88,53 @@ function M.create_rm_cmds(state)
     end
 
     return sh_cmds
+end
+
+---Creates new items through touch or mkdir
+---@param dir_path string
+---@param user_input string
+---@return string
+function M.create_new_items_cmd(dir_path, user_input)
+    local parts = fm_globals.split(user_input[1], " ")
+
+    --local cmd = sh_cmd
+    local touch_cmds = {}
+    local mkdir_cmds = {}
+
+    for _, item in ipairs(parts) do
+        if fm_globals.is_item_directory(item) then
+            table.insert(mkdir_cmds, dir_path .. item)
+        else
+            table.insert(touch_cmds, dir_path .. item)
+        end
+    end
+
+    local mkdr_sh_cmd = "mkdir -p"
+    local touch_sh_cmd = "touch"
+    local has_mkdir_cmds = #mkdir_cmds ~= 0
+    local has_touch_cmds = #touch_cmds ~= 0
+
+    if has_mkdir_cmds then
+        for _, item in pairs(mkdir_cmds) do
+            mkdr_sh_cmd = mkdr_sh_cmd .. " " .. item
+        end
+    end
+
+    if has_touch_cmds then
+        for _, item in pairs(touch_cmds) do
+            touch_sh_cmd = touch_sh_cmd .. " " .. item
+        end
+    end
+
+    if has_mkdir_cmds then
+        if has_touch_cmds then
+            return mkdr_sh_cmd .. " && " .. touch_sh_cmd
+        else
+            return mkdr_sh_cmd
+        end
+    else
+        return touch_sh_cmd
+    end
 end
 
 return M

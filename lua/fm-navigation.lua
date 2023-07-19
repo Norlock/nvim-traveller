@@ -5,8 +5,14 @@ local fm_telescope = require("fm-plugin-telescope")
 local fm_shell = require("fm-shell")
 
 local path = require("plenary.path")
-local Event = require("fm-event")
+local Location = require("fm-location")
 
+local item_cmd = {
+    open = 'e',
+    openTab = 'tabe',
+    vSplit = 'vsplit',
+    hSplit = 'split',
+}
 
 ---@type ModOptions
 local mod_options = {}
@@ -18,8 +24,8 @@ local mod_options = {}
 ---@field dir_path string
 ---@field show_hidden boolean
 ---@field is_initialized boolean
----@field history Event[]
----@field selection Event[]
+---@field history Location[]
+---@field selection Location[]
 ---@field buf_content table
 local NavigationState = {
     is_initialized = false
@@ -61,15 +67,10 @@ function NavigationState:init(options)
     self.win_id = vim.api.nvim_get_current_win()
     self.buf_id = vim.api.nvim_create_buf(false, true)
     self.show_hidden = self.show_hidden or self.show_hidden == nil
-    self.is_open = false
     self.is_initialized = true
     self.history = {}
     self.selection = options.selection or {}
     self.buf_content = {}
-end
-
-function NavigationState:create_help_popup()
-    fm_popup:create_help_popup()
 end
 
 function NavigationState:toggle_hidden()
@@ -77,9 +78,9 @@ function NavigationState:toggle_hidden()
     self:reload_buffer()
 end
 
-function NavigationState:get_current_event()
+function NavigationState:get_current_location()
     local item_name = self:get_cursor_item()
-    return Event:new(self.dir_path, item_name)
+    return Location:new(self.dir_path, item_name)
 end
 
 function NavigationState:get_relative_path()
@@ -130,7 +131,7 @@ function NavigationState:paste_selection(copy)
 end
 
 function NavigationState:add_to_selection()
-    local event = self:get_current_event()
+    local event = self:get_current_location()
     local selection_index = self:get_selection_index(event.item_name)
 
     if selection_index == -1 then
@@ -243,7 +244,7 @@ function NavigationState:navigate_to_parent()
         return
     end
 
-    local function get_parent_event()
+    local function get_parent_location()
         local parts = fm_globals.split(self.dir_path, "/")
         local item_name = table.remove(parts, #parts)
 
@@ -252,7 +253,7 @@ function NavigationState:navigate_to_parent()
             dir_path = dir_path .. value .. "/"
         end
 
-        return Event:new(dir_path, item_name .. "/")
+        return Location:new(dir_path, item_name .. "/")
     end
 
     local function get_history_index(cmp_path)
@@ -264,7 +265,7 @@ function NavigationState:navigate_to_parent()
         return -1
     end
 
-    local function update_history_event(event)
+    local function update_history_location(event)
         local his_index = get_history_index(event.dir_path)
 
         if his_index == -1 then
@@ -274,13 +275,13 @@ function NavigationState:navigate_to_parent()
         end
     end
 
-    local current_event = self:get_current_event()
-    local parent_event = get_parent_event()
+    local current_location = self:get_current_location()
+    local parent_location = get_parent_location()
 
-    update_history_event(current_event)
-    update_history_event(parent_event)
+    update_history_location(current_location)
+    update_history_location(parent_location)
 
-    self:set_buffer_content(parent_event.dir_path)
+    self:set_buffer_content(parent_location.dir_path)
 end
 
 function NavigationState:open_navigation()
@@ -295,18 +296,11 @@ function NavigationState:open_navigation()
         end
     })
 
-    local cmd = {
-        open = 'e',
-        openTab = 'tabe',
-        vSplit = 'vsplit',
-        hSplit = 'split',
-    }
-
     local function action_on_item(cmd_str)
         local item = self:get_cursor_item()
 
         if fm_globals.is_item_directory(item) then
-            if cmd_str == cmd.open then
+            if cmd_str == item_cmd.open then
                 self:set_buffer_content(self.dir_path .. item)
             end
         else
@@ -342,7 +336,7 @@ function NavigationState:open_navigation()
     local function confirm_callback(popup, sh_cmd)
         local output = vim.fn.systemlist(sh_cmd .. fm_globals.only_stderr)
         self:reload_buffer()
-        popup.close_navigation()
+        popup:close_navigation()
 
         if #output ~= 0 then
             fm_globals.debug(output)
@@ -350,41 +344,41 @@ function NavigationState:open_navigation()
         end
     end
 
-    local function create_item_popup()
-        local popup = fm_popup.create_item_popup(self:get_relative_path())
+    local function create_items_popup()
+        local popup = fm_popup.create_items_popup()
 
         local function confirm_mkdir_callback()
-            confirm_callback(popup, popup.create_new_items_cmd())
+            confirm_callback(popup, popup:create_new_items_cmd(self.dir_path))
         end
 
-        popup.set_keymap('i', '<Cr>', confirm_mkdir_callback)
+        popup:set_keymap('i', '<Cr>', confirm_mkdir_callback)
     end
 
     local function create_move_popup()
-        local item_name = self:get_cursor_item()
-        local popup = fm_popup.create_move_popup(self:get_absolute_path(), item_name)
+        local current_location = self:get_current_location()
+        local popup = fm_popup.create_move_popup(current_location)
 
         local function confirm_move_callback()
             -- Tries git mv first, if fails fallsback to mv.
-            local sh_cmd = popup.create_mv_cmd(item_name, "git mv")
+            local sh_cmd = popup:create_mv_cmd(current_location, "git mv")
             local output = vim.fn.systemlist(sh_cmd .. fm_globals.only_stderr)
 
             if #output ~= 0 then
                 fm_globals.debug(output)
-                confirm_callback(popup, popup.create_mv_cmd(item_name, "mv"))
+                confirm_callback(popup, popup:create_mv_cmd(current_location, "mv"))
             else
                 self:reload_buffer()
-                popup.close_navigation()
+                popup:close_navigation()
             end
         end
 
-        popup.set_keymap('i', '<Cr>', confirm_move_callback)
-        popup.set_keymap('n', '<Cr>', confirm_move_callback)
+        popup:set_keymap('i', '<Cr>', confirm_move_callback)
+        popup:set_keymap('n', '<Cr>', confirm_move_callback)
     end
 
     local function delete_item()
         local sh_cmds = fm_shell.create_rm_cmds(self)
-        local popup = fm_popup:create_delete_item_popup(sh_cmds, self.win_id)
+        local popup = fm_popup.create_delete_item_popup(self.win_id, sh_cmds)
 
         local function confirm_delete_callback()
             local errors = {}
@@ -399,7 +393,7 @@ function NavigationState:open_navigation()
 
             self.selection = {}
             self:reload_buffer()
-            popup.close_navigation()
+            popup:close_navigation()
 
             if #errors ~= 0 then
                 fm_globals.debug(errors)
@@ -407,7 +401,7 @@ function NavigationState:open_navigation()
             end
         end
 
-        popup.set_keymap('<Cr>', confirm_delete_callback)
+        popup:set_keymap('n', '<Cr>', confirm_delete_callback)
     end
 
     local function navigate_to_home_directory()
@@ -416,20 +410,20 @@ function NavigationState:open_navigation()
 
     vim.keymap.set('n', 'q', function() self:close_navigation() end, buffer_options)
     vim.keymap.set('n', '<Esc>', function() self:close_navigation() end, buffer_options)
-    vim.keymap.set('n', '<Right>', function() action_on_item(cmd.open) end, buffer_options)
-    vim.keymap.set('n', 'l', function() action_on_item(cmd.open) end, buffer_options)
-    vim.keymap.set('n', '<Cr>', function() action_on_item(cmd.open) end, buffer_options)
-    vim.keymap.set('n', 'v', function() action_on_item(cmd.vSplit) end, buffer_options)
-    vim.keymap.set('n', 's', function() action_on_item(cmd.hSplit) end, buffer_options)
-    vim.keymap.set('n', 't', function() action_on_item(cmd.openTab) end, buffer_options)
+    vim.keymap.set('n', '<Right>', function() action_on_item(item_cmd.open) end, buffer_options)
+    vim.keymap.set('n', 'l', function() action_on_item(item_cmd.open) end, buffer_options)
+    vim.keymap.set('n', '<Cr>', function() action_on_item(item_cmd.open) end, buffer_options)
+    vim.keymap.set('n', 'v', function() action_on_item(item_cmd.vSplit) end, buffer_options)
+    vim.keymap.set('n', 's', function() action_on_item(item_cmd.hSplit) end, buffer_options)
+    vim.keymap.set('n', 't', function() action_on_item(item_cmd.openTab) end, buffer_options)
     vim.keymap.set('n', '=', open_terminal, buffer_options)
-    vim.keymap.set('n', 'c', create_item_popup, buffer_options)
+    vim.keymap.set('n', 'c', create_items_popup, buffer_options)
     vim.keymap.set('n', 'm', create_move_popup, buffer_options)
     vim.keymap.set('n', 'dd', delete_item, buffer_options)
     vim.keymap.set('n', '<F1>', "", buffer_options)
     vim.keymap.set('n', '<Left>', function() self:navigate_to_parent() end, buffer_options)
     vim.keymap.set('n', 'h', function() self:navigate_to_parent() end, buffer_options)
-    vim.keymap.set('n', '?', function() self:create_help_popup() end, buffer_options)
+    vim.keymap.set('n', '?', function() fm_popup.create_help_popup() end, buffer_options)
     vim.keymap.set('n', '<A-.>', function() self:toggle_hidden() end, buffer_options)
     vim.keymap.set('n', 'y', function() self:add_to_selection() end, buffer_options)
     vim.keymap.set('n', 'u', function() self:undo_selection() end, buffer_options)
@@ -442,7 +436,7 @@ function NavigationState:open_navigation()
     vim.keymap.set('n', 'a', function() fm_telescope:live_grep(self) end, buffer_options)
 
     if fn ~= "" then
-        table.insert(self.history, Event:new(self.dir_path, fn))
+        table.insert(self.history, Location:new(self.dir_path, fn))
     end
 
     self:reload_buffer()

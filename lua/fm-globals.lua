@@ -70,13 +70,6 @@ function M.directory_is_inside_a_git_repo(dir_path)
     return #vim.fn.systemlist(sh_cmd) == 0
 end
 
-function M.close_window(state)
-    if vim.api.nvim_win_is_valid(state.win_id) then
-        state.is_open = false
-        vim.api.nvim_win_close(state.win_id, false)
-    end
-end
-
 function M.get_home_directory()
     return vim.fn.expand("$HOME") .. "/"
 end

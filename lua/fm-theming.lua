@@ -6,7 +6,7 @@ local M = {
     help_ns_id = vim.api.nvim_create_namespace("TravellerHelp")
 }
 
----@param state NavigationState
+---@param state NavigationState | Popup
 function M.add_theming(state)
     vim.opt.cursorline = true
     vim.api.nvim_create_autocmd("BufEnter", {
@@ -31,6 +31,7 @@ function M.add_theming(state)
     vim.api.nvim_win_set_hl_ns(state.win_id, M.navigation_ns_id)
 end
 
+---@param state Popup
 function M.add_info_popup_theming(state)
     local hlBorder = {
         link = "Question",
@@ -43,6 +44,7 @@ function M.add_info_popup_theming(state)
     vim.api.nvim_win_set_hl_ns(state.win_id, M.popup_ns_id)
 end
 
+---@param state Popup
 function M.add_help_popup_theming(state)
     vim.api.nvim_set_hl(M.help_ns_id, 'FloatBorder', {})
     vim.api.nvim_set_hl(M.help_ns_id, 'NormalFloat', {})
@@ -60,11 +62,12 @@ function M.theme_buffer_content(state)
         end
 
         if state:is_selected(item_name) then
-            vim.api.nvim_buf_add_highlight(state.buf_id, M.navigation_ns_id, "PmenuSel", i - 1, 0, -1)
+            vim.api.nvim_buf_add_highlight(state.buf_id, M.navigation_ns_id, "Special", i - 1, 0, -1)
         end
     end
 end
 
+---@param state Popup
 function M.theme_help_content(state)
     local function add_hl(hl_group, i, col_start, col_end)
         vim.api.nvim_buf_add_highlight(
