@@ -3,11 +3,17 @@ A file manager inside Neovim.
 
 ### What makes this file manager different than others?
 
-I want to put the emphasis on multi-project use, having a polished experience inside Neovim. Take a look at the showcase to see how it can enhance your workflow for multiproject use. 
-The idea is that you don't have to open new terminals and navigate to the desired location to open up another instance of Neovim. If for instance you are creating a frontend application 
-and want to see what kind of parameters your request need to have. You cam navigate inside Neovim and quickly open the correct project. You share the buffers so yanking / pasting is very convenient.
+I want to put the emphasis on multi-project use, having a polished experience inside Neovim. Take a
+look at the showcase to see how it can enhance your workflow for multi-project use. 
+The idea is that you don't have to open new terminals and navigate to the desired locations only to open up another instance of Neovim. 
 
-If for example you need to tail some log file of your backend you can open a terminal from inside neovim at the correct location.
+If for instance you are creating a frontend application and want to see what kind of parameters your
+request needs to have. You can navigate inside Neovim quickly and open the backend project. You
+share the buffers so yanking / pasting is very convenient. It also makes sure cwd is always correct
+so your plugins will work.
+
+If for example you need to tail some log file of your backend you can open a real terminal (or
+terminal tab) from inside Neovim at the correct location.
 
 ## Features
 - [x] Fast navigation through directories
@@ -28,6 +34,9 @@ If for example you need to tail some log file of your backend you can open a ter
 - [x] Change cwd to traveller (optional)
 - [x] Navigate to home directory with a hotkey
 - [x] Being able to select items
+- [x] Being able to delete selected items (using git rm if possible)
+- [x] Being able to move / copy selected items
+  - [ ] Use git mv if possible
 - [x] Selection feedback window in the bottom
 - [x] Resize windows if needed
   - [ ] Create min width / min height
