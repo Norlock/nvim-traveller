@@ -48,17 +48,21 @@ https://github.com/Norlock/nvim-traveller/assets/7510943/ccaa83ce-593c-4dde-8bb6
 
 Install using packer:
 ```lua
-use {
-  'norlock/nvim-traveller',
-  requires = { {'nvim-lua/plenary.nvim'} }
-}
+use 'nvim-lua/plenary.nvim',
+use 'nvim-telescope/telescope.nvim', tag = '0.1.2',
+use 'norlock/nvim-traveller',
 ```
 
 Install using vim-plug:
 ```viml
 Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.2' } 
 Plug 'norlock/nvim-traveller'
 ```
+
+## Requires
+- Telescope plugin
+- fd - https://github.com/sharkdp/fd 
 
 ## Usage
 
