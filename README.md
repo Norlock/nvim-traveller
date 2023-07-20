@@ -3,11 +3,11 @@ A file manager inside Neovim.
 
 ### What makes this file manager different than others?
 
-I want to put the emphasis on multi-project use, having a polished experience. I use it as a plugin
-that inverts my workflow. I open Neovim first, travel to directories and open files or terminals at the
-desired location. 
+I want to put the emphasis on multi-project use, having a polished experience inside Neovim. Take a look at the showcase to see how it can enhance your workflow for multiproject use. 
+The idea is that you don't have to open new terminals and navigate to the desired location to open up another instance of Neovim. If for instance you are creating a frontend application 
+and want to see what kind of parameters your request need to have. You cam navigate inside Neovim and quickly open the correct project. You share the buffers so yanking / pasting is very convenient.
 
-https://github.com/Norlock/nvim-traveller/assets/7510943/44c0982d-0cb9-479f-823e-7ef574a215ab
+If for example you need to tail some log file of your backend you can open a terminal from inside neovim at the correct location.
 
 ## Features
 - [x] Fast navigation through directories
@@ -39,6 +39,10 @@ https://github.com/Norlock/nvim-traveller/assets/7510943/44c0982d-0cb9-479f-823e
 - [ ] Optional: FZF/(Other fuzzy file searcher)  if there is demand for it
 - [ ] Optional: being able to pass stringed cmds "test file.lua"
 - [ ] Optional: Support for Windows (if there is demand for it)
+
+## Showcase
+
+https://github.com/Norlock/nvim-traveller/assets/7510943/ccaa83ce-593c-4dde-8bb6-a0b612a67d4b
 
 ## Startup
 
