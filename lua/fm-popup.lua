@@ -252,7 +252,6 @@ function M.create_help_popup()
 
     local buf_content = {
         " -- Navigation",
-        " ",
         " [h / <Left>]              Navigate to parent",
         " [l / <Right> / <Cr>]      Navigate to directory or open item",
         " [q / <Esc>]               Close popup / navigation",
@@ -260,20 +259,27 @@ function M.create_help_popup()
         " [~]                       Navigate to home directory",
         " ",
         " -- Commands",
-        " ",
         " [t]                       Open file as tab",
         " [s]                       Open file as split",
         " [v]                       Open file as vsplit",
-        " [=]                       Open terminal in tab",
+        " [os]                      Open terminal in Neovim",
+        " [ot]                      Open terminal (using $TERM)",
         " [c]                       Create items (e.g.: test.lua lua/ lua/some_file.lua)",
         " [dd]                      Delete item / Delete selection",
         " [m]                       Move or rename item (e.g.: .. will move to parent)",
         " [f]                       Toggle telescope find_files inside directory",
         " [a]                       Toggle telescope live_grep inside directory",
+        " ",
+        " -- Selection",
         " [y]                       Yank item (add/remove to selection)",
         " [pm]                      Paste as move",
         " [pc]                      Paste as copy",
         " [u]                       Undo selection",
+        " ",
+        " -- Telescope search directory",
+        " [<C-t>]                   Open directory in $TERM",
+        " [<Cr>]                    Open directory in traveller",
+
     }
 
     local function init()
