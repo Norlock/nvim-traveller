@@ -74,6 +74,9 @@ function M.get_home_directory()
     return vim.fn.expand("$HOME") .. "/"
 end
 
+---@param target table
+---@param other table
+---@return table
 function M.concat_table(target, other)
     for i = 1, #other do
         target[#target + 1] = other[i]

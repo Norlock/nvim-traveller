@@ -33,12 +33,15 @@ function M.open_navigation()
     end
 end
 
-function M.open_telescope_search()
+---Searches directories and opens traveller / (or a terminal with C-t)
+---@param search_dir string absolute directory to start search from
+---@param show_hidden boolean show hidden files or not
+function M.open_telescope_search(search_dir, show_hidden)
     if not state.is_initialized then
         state = NavigationState:new()
     end
 
-    fm_telescope:global_search(state)
+    fm_telescope:global_search(state, search_dir, show_hidden)
 end
 
 ---Setup global options

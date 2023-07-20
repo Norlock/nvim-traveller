@@ -2,13 +2,12 @@ local fm_globals = require("fm-globals")
 
 local M = {}
 
-
 ---@alias mv_cmd 'mv' | 'git mv'
 ---@param src_event Location
 ---@param dst_str string
 ---@param mv_cmd mv_cmd
 ---@return string
-function M:create_mv_cmd(src_event, dst_str, mv_cmd)
+function M.create_mv_cmd(src_event, dst_str, mv_cmd)
     local dir_path = src_event.dir_path
     local item_name = src_event.item_name
 
@@ -20,7 +19,7 @@ end
 
 ---@param state NavigationState
 ---@return string[]
-function M:create_mv_cmds_selection(state)
+function M.create_mv_cmds_selection(state)
     local sh_cmds = {}
 
     -- TODO try to use git mv cmd as well
@@ -37,7 +36,7 @@ end
 
 ---@param state NavigationState
 ---@return string[]
-function M:create_cp_cmds_selection(state)
+function M.create_cp_cmds_selection(state)
     local sh_cmds = {}
     for _, event in pairs(state.selection) do
         local sanitize_src = fm_globals.sanitize(event.dir_path .. event.item_name)
@@ -136,6 +135,17 @@ function M.create_new_items_cmd(dir_path, user_input)
     else
         return touch_sh_cmd
     end
+end
+
+function M.open_terminal(abs_path)
+    local term = vim.fn.expand("$TERM")
+    vim.fn.jobstart(term, { cwd = abs_path, detach = true })
+end
+
+function M.open_shell(rel_path)
+    vim.cmd("tabe")
+    vim.cmd("terminal cd " .. rel_path .. " && $SHELL")
+    vim.cmd("startinsert")
 end
 
 return M

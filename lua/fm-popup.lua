@@ -24,7 +24,7 @@ function Popup:new()
     return o
 end
 
-function Popup:close_navigation()
+function Popup:close()
     if vim.api.nvim_win_is_valid(self.win_id) then
         vim.api.nvim_win_close(self.win_id, false)
     end
@@ -47,7 +47,7 @@ function Popup:init_cmd_variant(title, buf_content)
         buffer = self.buf_id,
         callback = function()
             vim.cmd('stopinsert')
-            self:close_navigation()
+            self:close()
         end
     })
 
@@ -116,21 +116,52 @@ local function create_feedback_window_options(related_win_id, title, buf_content
     }
 end
 
+local function create_selection_window_options(related_win_id)
+    local win_width = vim.api.nvim_win_get_width(related_win_id)
+    local win_height = vim.api.nvim_win_get_height(related_win_id)
+    local height = 1
+
+    return {
+        relative = 'win',
+        win = related_win_id,
+        width = win_width,
+        height = height,
+        row = win_height - height,
+        col = -1,
+        anchor = 'NW',
+        style = 'minimal',
+        border = 'none',
+        noautocmd = true,
+    }
+end
+
 ---@param buf_content string[]
 ---@param win_options any
 function Popup:init_info_variant(buf_content, win_options)
     vim.api.nvim_create_autocmd({ "BufLeave", "BufHidden" }, {
         buffer = self.buf_id,
         callback = function()
-            self:close_navigation()
+            self:close()
         end
     })
 
     self.win_id = vim.api.nvim_open_win(self.buf_id, true, win_options)
     self.buffer_options = { silent = true, buffer = self.buf_id }
 
-    vim.keymap.set('n', '<Esc>', function() self:close_navigation() end, self.buffer_options)
-    vim.keymap.set('n', 'q', function() self:close_navigation() end, self.buffer_options)
+    vim.keymap.set('n', '<Esc>', function() self:close() end, self.buffer_options)
+    vim.keymap.set('n', 'q', function() self:close() end, self.buffer_options)
+
+    self:set_buffer_content(buf_content)
+end
+
+---@param buf_content string[]
+---@param win_options any
+function Popup:init_status_variant(buf_content, win_options)
+    self.win_id = vim.api.nvim_open_win(self.buf_id, false, win_options)
+    self.buffer_options = { silent = true, buffer = self.buf_id }
+
+    vim.keymap.set('n', '<Esc>', function() self:close() end, self.buffer_options)
+    vim.keymap.set('n', 'q', function() self:close() end, self.buffer_options)
 
     self:set_buffer_content(buf_content)
 end
@@ -140,7 +171,7 @@ end
 ---@return string
 function Popup:create_mv_cmd(current_location, mv_cmd)
     local user_input = vim.api.nvim_buf_get_lines(self.buf_id, 0, 1, false)[1]
-    return fm_shell:create_mv_cmd(current_location, user_input, mv_cmd)
+    return fm_shell.create_mv_cmd(current_location, user_input, mv_cmd)
 end
 
 ---@param dir_path string
@@ -148,6 +179,19 @@ end
 function Popup:create_new_items_cmd(dir_path)
     local user_input = vim.api.nvim_buf_get_lines(self.buf_id, 0, 1, false)
     return fm_shell.create_new_items_cmd(dir_path, user_input)
+end
+
+---@param nav_state any
+---@return string[]
+local function create_selection_buf_content(nav_state)
+    return { "    " .. #nav_state.selection .. " items selected: [u] undo, [pm] paste as move, "
+        .. "[pc] paste as copy)" }
+end
+---updates text for popups with
+---@param nav_state NavigationState
+function Popup:update_status_text(nav_state)
+    local buf_content = create_selection_buf_content(nav_state)
+    self:set_buffer_content(buf_content)
 end
 
 local M = {}
@@ -171,7 +215,7 @@ function M.create_items_popup()
     local popup = Popup:new()
     popup:init_cmd_variant(' Create (separate by space) ', {})
 
-    popup:set_keymap('i', '<Esc>', function() popup:close_navigation() end)
+    popup:set_keymap('i', '<Esc>', function() popup:close() end)
     vim.cmd("startinsert")
 
     return popup
@@ -185,16 +229,23 @@ function M.create_move_popup(location)
     popup:init_cmd_variant(' Move (mv) ', { location.dir_path .. location.item_name })
 
     vim.api.nvim_win_set_cursor(popup.win_id, { 1, #location.dir_path })
-    popup:set_keymap('n', '<Esc>', function() popup:close_navigation() end)
-    popup:set_keymap('n', '<Esc>', function() popup:close_navigation() end)
+    popup:set_keymap('n', '<Esc>', function() popup:close() end)
+    popup:set_keymap('n', '<Esc>', function() popup:close() end)
 
     return popup
 end
 
-----@param navigation_state NavigationState
---function M.create_selection_popup(navigation_state)
---local popup = Popup:new()
---end
+---@param nav_state NavigationState
+function M.create_selection_popup(nav_state)
+    local popup = Popup:new()
+
+    local buf_content = create_selection_buf_content(nav_state)
+    local window_opts = create_selection_window_options(nav_state.win_id)
+
+    popup:init_status_variant(buf_content, window_opts)
+
+    return popup
+end
 
 function M.create_help_popup()
     local popup = Popup:new()
@@ -237,7 +288,7 @@ function M.create_help_popup()
     vim.api.nvim_create_autocmd("VimResized", {
         buffer = popup.buf_id,
         callback = function()
-            popup:close_navigation()
+            popup:close()
             init()
         end
     })

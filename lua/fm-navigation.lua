@@ -68,6 +68,13 @@ function NavigationState:init(options)
     self.history = {}
     self.selection = options.selection or {}
     self.buf_content = {}
+
+    vim.api.nvim_create_autocmd({ "BufHidden" }, {
+        buffer = self.buf_id,
+        callback = function()
+            self:close_status_popup()
+        end
+    })
 end
 
 function NavigationState:toggle_hidden()
@@ -103,9 +110,9 @@ end
 function NavigationState:paste_selection(copy)
     local sh_cmds
     if copy then
-        sh_cmds = fm_shell:create_cp_cmds_selection(self)
+        sh_cmds = fm_shell.create_cp_cmds_selection(self)
     else
-        sh_cmds = fm_shell:create_mv_cmds_selection(self)
+        sh_cmds = fm_shell.create_mv_cmds_selection(self)
     end
 
     fm_globals.debug(sh_cmds)
@@ -118,12 +125,33 @@ function NavigationState:paste_selection(copy)
         end
     end
 
-    self.selection = {}
+    self:undo_selection()
     self:reload_buffer()
 
     if #errors ~= 0 then
         fm_globals.debug(errors)
         fm_popup.create_info_popup(errors, self.win_id, 'Command failed (Esc / q)')
+    end
+end
+
+function NavigationState:close_status_popup()
+    if self.status_popup then
+        self.status_popup:close()
+        self.status_popup = nil;
+    end
+end
+
+function NavigationState:init_status_popup()
+    local has_selection = #self.selection ~= 0
+
+    if self.status_popup then
+        if has_selection then
+            self.status_popup:update_status_text(self)
+        else
+            self:close_status_popup()
+        end
+    elseif has_selection then
+        self.status_popup = fm_popup.create_selection_popup(self)
     end
 end
 
@@ -138,11 +166,13 @@ function NavigationState:add_to_selection()
     end
 
     fm_theming.theme_buffer_content(self)
+    self:init_status_popup()
 end
 
 function NavigationState:undo_selection()
     self.selection = {}
     fm_theming.theme_buffer_content(self)
+    self:close_status_popup()
 end
 
 ---Checks if in selection
@@ -156,8 +186,8 @@ end
 ---@param item_name string
 ---@return number
 function NavigationState:get_selection_index(item_name)
-    for i, event in ipairs(self.selection) do
-        if event.dir_path == self.dir_path and event.item_name == item_name then
+    for i, location in ipairs(self.selection) do
+        if location.dir_path == self.dir_path and location.item_name == item_name then
             return i
         end
     end
@@ -239,6 +269,12 @@ end
 ---@param self NavigationState
 ---@param dir_path string
 function NavigationState:reload_navigation(dir_path)
+    dir_path = path:new(dir_path):absolute()
+
+    if not fm_globals.is_item_directory(dir_path) then
+        dir_path = dir_path .. "/"
+    end
+
     self:init({ dir_path = dir_path, selection = self.selection })
     self:open_navigation()
 end
@@ -302,15 +338,6 @@ function NavigationState:open_navigation()
         end
     end
 
-    local function open_terminal()
-        local dir_path = self:get_relative_path()
-
-        local sh_cmd = ":terminal"
-        vim.cmd("tabe")
-        vim.cmd(sh_cmd .. " cd " .. dir_path .. " && $SHELL")
-        vim.cmd("startinsert")
-    end
-
     -- Needs to happen here before new buffer gets loaded
     local fn = vim.fn.expand('%:t')
     local buffer = vim.api.nvim_get_current_buf()
@@ -322,16 +349,16 @@ function NavigationState:open_navigation()
     end
 
     fm_theming.add_theming(self)
+    self:init_status_popup()
 
     local buffer_options = { silent = true, buffer = self.buf_id }
 
-    ---comment
-    ---@param popup any
+    ---@param popup Popup
     ---@param sh_cmd string
     local function confirm_callback(popup, sh_cmd)
         local output = vim.fn.systemlist(sh_cmd .. fm_globals.only_stderr)
         self:reload_buffer()
-        popup:close_navigation()
+        popup:close()
 
         if #output ~= 0 then
             fm_globals.debug(output)
@@ -363,7 +390,7 @@ function NavigationState:open_navigation()
                 confirm_callback(popup, popup:create_mv_cmd(current_location, "mv"))
             else
                 self:reload_buffer()
-                popup:close_navigation()
+                popup:close()
             end
         end
 
@@ -386,9 +413,9 @@ function NavigationState:open_navigation()
                 end
             end
 
-            self.selection = {}
+            self:undo_selection()
             self:reload_buffer()
-            popup:close_navigation()
+            popup:close()
 
             if #errors ~= 0 then
                 fm_globals.debug(errors)
@@ -411,7 +438,15 @@ function NavigationState:open_navigation()
     vim.keymap.set('n', 'v', function() action_on_item(item_cmd.vSplit) end, buffer_options)
     vim.keymap.set('n', 's', function() action_on_item(item_cmd.hSplit) end, buffer_options)
     vim.keymap.set('n', 't', function() action_on_item(item_cmd.openTab) end, buffer_options)
-    vim.keymap.set('n', '=', open_terminal, buffer_options)
+
+    vim.keymap.set('n', 'ot', function()
+        fm_shell.open_terminal(self:get_absolute_path())
+    end, buffer_options)
+
+    vim.keymap.set('n', 'os', function()
+        fm_shell.open_shell(self:get_relative_path())
+    end, buffer_options)
+
     vim.keymap.set('n', 'c', create_items_popup, buffer_options)
     vim.keymap.set('n', 'm', create_move_popup, buffer_options)
     vim.keymap.set('n', 'dd', delete_item, buffer_options)

@@ -1,4 +1,4 @@
-local fmGlobals = require("fm-globals")
+local fm_globals = require("fm-globals")
 
 local M = {
     navigation_ns_id = vim.api.nvim_create_namespace("Traveller"),
@@ -57,7 +57,7 @@ function M.theme_buffer_content(state)
     vim.api.nvim_buf_clear_namespace(state.buf_id, M.navigation_ns_id, 0, -1)
 
     for i, item_name in ipairs(state.buf_content) do
-        if fmGlobals.is_item_directory(item_name) then
+        if fm_globals.is_item_directory(item_name) then
             vim.api.nvim_buf_add_highlight(state.buf_id, M.navigation_ns_id, "Directory", i - 1, 0, -1)
         end
 
@@ -76,7 +76,7 @@ function M.theme_help_content(state)
     end
 
     local function hl_comment(i, line)
-        local trim = fmGlobals.trim(line)
+        local trim = fm_globals.trim(line)
         if string.sub(trim, 1, 2) == "--" then
             add_hl('Title', i, 0, -1)
         end
