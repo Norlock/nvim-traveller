@@ -6,8 +6,8 @@ local M = {
     help_ns_id = vim.api.nvim_create_namespace("TravellerHelp")
 }
 
----@param state NavigationState | Popup
-function M.add_theming(state)
+---@param state NavigationState
+function M.add_navigation_theming(state)
     vim.opt.cursorline = true
     vim.api.nvim_create_autocmd("BufEnter", {
         buffer = state.buf_id,
@@ -32,6 +32,15 @@ function M.add_theming(state)
 end
 
 ---@param state Popup
+function M.add_cmd_popup_theming(state)
+    vim.api.nvim_set_hl(M.popup_ns_id, 'FloatTitle', { link = "Question" })
+    vim.api.nvim_set_hl(M.popup_ns_id, 'FloatBorder', {})
+    vim.api.nvim_set_hl(M.popup_ns_id, 'NormalFloat', { italic = true })
+
+    vim.api.nvim_win_set_hl_ns(state.win_id, M.popup_ns_id)
+end
+
+---@param state Popup
 function M.add_info_popup_theming(state)
     local hlBorder = {
         link = "Question",
@@ -48,6 +57,7 @@ end
 function M.add_help_popup_theming(state)
     vim.api.nvim_set_hl(M.help_ns_id, 'FloatBorder', {})
     vim.api.nvim_set_hl(M.help_ns_id, 'NormalFloat', {})
+
     vim.api.nvim_win_set_hl_ns(state.win_id, M.help_ns_id)
 end
 

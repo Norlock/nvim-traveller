@@ -72,7 +72,7 @@ function Popup:init_cmd_variant(title, buf_content)
     vim.api.nvim_buf_set_lines(self.buf_id, 0, -1, true, buf_content)
 
     self.win_id = vim.api.nvim_open_win(self.buf_id, true, win_options)
-    fm_theming.add_theming(self)
+    fm_theming.add_cmd_popup_theming(self)
 end
 
 local function create_help_window_options()

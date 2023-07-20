@@ -348,7 +348,7 @@ function NavigationState:open_navigation()
         vim.api.nvim_buf_delete(buffer, {})
     end
 
-    fm_theming.add_theming(self)
+    fm_theming.add_navigation_theming(self)
     self:init_status_popup()
 
     local buffer_options = { silent = true, buffer = self.buf_id }
