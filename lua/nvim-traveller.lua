@@ -48,18 +48,16 @@ end
 ---@param options ModOptions
 function M.setup(options)
     options = options or {}
-
     if options.replace_netrw then
-        vim.g.loaded_netrwPlugin = 1
-        vim.g.loaded_netrw = 1
+        vim.api.nvim_create_autocmd("VimEnter", {
+            callback = function()
+                vim.api.nvim_del_augroup_by_name("FileExplorer")
 
-        local fn = vim.fn.expand('%:t')
-
-        if fn == "" then
-            vim.api.nvim_create_autocmd("VimEnter", {
-                callback = M.open_navigation
-            })
-        end
+                if vim.bo.filetype == "netrw" then
+                    M.open_navigation()
+                end
+            end
+        })
     end
 
 

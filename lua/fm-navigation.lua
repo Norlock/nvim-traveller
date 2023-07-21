@@ -222,13 +222,8 @@ function NavigationState:set_buffer_content(new_dir_path)
                 return "ls -pL "
             end
         end
-        local buf_content = {}
 
-        for item in io.popen(get_cmd_prefix() .. new_dir_path):lines() do
-            table.insert(buf_content, item)
-        end
-
-        return buf_content
+        return vim.fn.systemlist(get_cmd_prefix() .. new_dir_path)
     end
 
     self.dir_path = new_dir_path
@@ -346,13 +341,9 @@ function NavigationState:open_navigation()
 
     -- Needs to happen here before new buffer gets loaded
     local fn = vim.fn.expand('%:t')
-    local buffer = vim.api.nvim_get_current_buf()
 
     vim.api.nvim_win_set_buf(self.win_id, self.buf_id)
 
-    --if fn == "" then -- file doesn't exist
-        --vim.api.nvim_buf_delete(buffer, {})
-    --end
 
     fm_theming.add_navigation_theming(self)
     self:init_status_popup()

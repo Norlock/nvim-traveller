@@ -138,7 +138,7 @@ end
 ---@param buf_content string[]
 ---@param win_options any
 function Popup:init_info_variant(buf_content, win_options)
-    vim.api.nvim_create_autocmd({ "BufLeave", "BufHidden" }, {
+    vim.api.nvim_create_autocmd({ "BufLeave" }, {
         buffer = self.buf_id,
         callback = function()
             self:close()
