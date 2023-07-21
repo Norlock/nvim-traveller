@@ -7,7 +7,7 @@ local fm_shell = require("fm-shell")
 ---@field buf_id integer
 ---@field buf_content string[]
 ---@field buffer_options table
-local Popup = {}
+Popup = {}
 
 ---comment
 ---@return Popup
@@ -243,6 +243,7 @@ function M.create_selection_popup(nav_state)
     local window_opts = create_selection_window_options(nav_state.win_id)
 
     popup:init_status_variant(buf_content, window_opts)
+    fm_theming.add_status_popup_theming(popup)
 
     return popup
 end

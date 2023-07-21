@@ -3,7 +3,8 @@ local fm_globals = require("fm-globals")
 local M = {
     navigation_ns_id = vim.api.nvim_create_namespace("Traveller"),
     popup_ns_id = vim.api.nvim_create_namespace("TravellerInfo"),
-    help_ns_id = vim.api.nvim_create_namespace("TravellerHelp")
+    help_ns_id = vim.api.nvim_create_namespace("TravellerHelp"),
+    status_ns_id = vim.api.nvim_create_namespace("TravellerStatus")
 }
 
 ---@param state NavigationState
@@ -32,7 +33,7 @@ function M.add_navigation_theming(state)
 end
 
 ---@param state Popup
-function M.add_cmd_popup_theming(state)
+function M:add_cmd_popup_theming(state)
     vim.api.nvim_set_hl(M.popup_ns_id, 'FloatTitle', { link = "Question" })
     vim.api.nvim_set_hl(M.popup_ns_id, 'FloatBorder', {})
     vim.api.nvim_set_hl(M.popup_ns_id, 'NormalFloat', { italic = true })
@@ -51,6 +52,16 @@ function M.add_info_popup_theming(state)
     vim.api.nvim_set_hl(M.popup_ns_id, 'NormalFloat', { italic = true })
 
     vim.api.nvim_win_set_hl_ns(state.win_id, M.popup_ns_id)
+end
+
+---@param state Popup
+function M.add_status_popup_theming(state)
+    local hlQuestion = vim.api.nvim_get_hl(0, { name = "Question" })
+    hlQuestion.reverse = true
+
+    vim.api.nvim_set_hl(M.status_ns_id, 'NormalFloat', hlQuestion)
+
+    vim.api.nvim_win_set_hl_ns(state.win_id, M.status_ns_id)
 end
 
 ---@param state Popup
