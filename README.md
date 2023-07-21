@@ -44,7 +44,7 @@ terminal tab) from inside Neovim at the correct location.
 - [ ] Custom keymapping
 - [ ] Custom directory for telescope global search
 - [x] Docs
-- [ ] Open binaries with open
+- [x] Open binaries with open
 - [ ] Optional: FZF/(Other fuzzy file searcher)  if there is demand for it
 - [ ] Optional: being able to pass stringed cmds "test file.lua"
 - [ ] Optional: Support for Windows (if there is demand for it)

@@ -333,8 +333,14 @@ function NavigationState:open_navigation()
                 self:set_buffer_content(self.dir_path .. item)
             end
         else
-            local file_rel = path:new(self.dir_path .. item):make_relative()
-            vim.cmd(cmd_str .. ' ' .. file_rel)
+            local abs_path = path:new(self.dir_path .. item):absolute()
+
+            if fm_shell.is_file_binary(abs_path) then
+                vim.fn.jobstart("open " .. abs_path, { detach = true })
+            else
+                local file_rel = path:new(self.dir_path .. item):make_relative()
+                vim.cmd(cmd_str .. ' ' .. file_rel)
+            end
         end
     end
 
@@ -344,9 +350,9 @@ function NavigationState:open_navigation()
 
     vim.api.nvim_win_set_buf(self.win_id, self.buf_id)
 
-    if fn == "" then -- file doesn't exist
-        vim.api.nvim_buf_delete(buffer, {})
-    end
+    --if fn == "" then -- file doesn't exist
+        --vim.api.nvim_buf_delete(buffer, {})
+    --end
 
     fm_theming.add_navigation_theming(self)
     self:init_status_popup()

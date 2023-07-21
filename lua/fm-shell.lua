@@ -148,4 +148,9 @@ function M.open_shell(rel_path)
     vim.cmd("startinsert")
 end
 
+function M.is_file_binary(file_path)
+    local output = vim.fn.systemlist("file --mime " .. file_path .. " | grep charset=binary")
+    return #output ~= 0
+end
+
 return M
