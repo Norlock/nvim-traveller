@@ -9,7 +9,6 @@ local fm_shell = require("fm-shell")
 ---@field buffer_options table
 Popup = {}
 
----comment
 ---@return Popup
 function Popup:new()
     local o = {}
@@ -185,7 +184,7 @@ end
 ---@return string[]
 local function create_selection_buf_content(nav_state)
     return { "    " .. #nav_state.selection .. " items selected: [u] undo, [pm] paste as move, "
-        .. "[pc] paste as copy)" }
+    .. "[pc] paste as copy)" }
 end
 ---updates text for popups with
 ---@param nav_state NavigationState
@@ -272,14 +271,13 @@ function M.create_help_popup()
         " [a]                       Toggle telescope live_grep inside directory",
         " ",
         " -- Selection",
-        " [y]                       Yank item (add/remove to selection)",
+        " [y]                       Yank item (add / remove to selection)",
         " [pm]                      Paste as move",
         " [pc]                      Paste as copy",
         " [u]                       Undo selection",
         " ",
         " -- Telescope search directory",
-        " [<C-t>]                   Open directory in $TERM",
-        " [<Cr>]                    Open directory in traveller",
+        " [<Cr> / t / v / s]        Open directory in traveller",
 
     }
 

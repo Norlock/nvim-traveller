@@ -3,13 +3,13 @@ local fm_globals = require("fm-globals")
 local M = {}
 
 ---@alias mv_cmd 'mv' | 'git mv'
----@param src_event Location
+---@param src_location Location
 ---@param dst_str string
 ---@param mv_cmd mv_cmd
 ---@return string
-function M.create_mv_cmd(src_event, dst_str, mv_cmd)
-    local dir_path = src_event.dir_path
-    local item_name = src_event.item_name
+function M.create_mv_cmd(src_location, dst_str, mv_cmd)
+    local dir_path = src_location.dir_path
+    local item_name = src_location.item_name
 
     local sh_cmd_prefix = table.concat({ "cd", dir_path, "&&", mv_cmd, fm_globals.sanitize(item_name) }, " ")
 

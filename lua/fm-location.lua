@@ -3,7 +3,7 @@
 ---@field item_name string
 local Location = {}
 
----Create new event
+---Create new location
 ---@param dir_path string
 ---@param item_name string
 ---@return Location
@@ -16,6 +16,11 @@ function Location:new(dir_path, item_name)
     o.item_name = item_name
 
     return o
+end
+
+---@return string
+function Location:to_path()
+    return self.dir_path .. self.item_name
 end
 
 return Location

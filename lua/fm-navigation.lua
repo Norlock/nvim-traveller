@@ -15,7 +15,7 @@ local item_cmd = {
 }
 
 ---@type ModOptions
-local mod_options = {}
+local mod_options
 
 ---@class NavigationState
 ---@field win_id number
@@ -264,8 +264,6 @@ end
 ---@param self NavigationState
 ---@param dir_path string
 function NavigationState:reload_navigation(dir_path)
-    dir_path = path:new(dir_path):absolute()
-
     if not fm_globals.is_item_directory(dir_path) then
         dir_path = dir_path .. "/"
     end
@@ -344,6 +342,7 @@ function NavigationState:open_navigation()
 
     vim.api.nvim_win_set_buf(self.win_id, self.buf_id)
 
+    --vim.cmd("file! Traveller (help: ?)") TODO fix
 
     fm_theming.add_navigation_theming(self)
     self:init_status_popup()
