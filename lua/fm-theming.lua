@@ -1,7 +1,7 @@
 local fm_globals = require("fm-globals")
 
 local M = {
-    navigation_ns_id = vim.api.nvim_create_namespace("Traveller"),
+    navigation_ns_id = vim.api.nvim_create_namespace("TravellerNavigation"),
     popup_ns_id = vim.api.nvim_create_namespace("TravellerInfo"),
     help_ns_id = vim.api.nvim_create_namespace("TravellerHelp"),
     status_ns_id = vim.api.nvim_create_namespace("TravellerStatus")
@@ -10,20 +10,6 @@ local M = {
 ---@param state NavigationState
 function M.add_navigation_theming(state)
     vim.opt.cursorline = true
-    vim.api.nvim_create_autocmd("BufEnter", {
-        buffer = state.buf_id,
-        callback = function()
-            vim.opt_local.cursorline = true
-        end
-    })
-
-    vim.api.nvim_create_autocmd("BufHidden", {
-        buffer = state.buf_id,
-        callback = function()
-            vim.opt_local.cursorline = false
-            vim.api.nvim_win_set_hl_ns(state.win_id, 0)
-        end
-    })
 
     local cursor_line_hl = vim.api.nvim_get_hl(0, { name = 'CursorLine' })
     cursor_line_hl.bold = true
@@ -76,6 +62,23 @@ end
 ---@param state NavigationState
 function M.theme_buffer_content(state)
     vim.api.nvim_buf_clear_namespace(state.buf_id, M.navigation_ns_id, 0, -1)
+
+    if #state.buf_content == 0 then
+        vim.opt_local.cursorline = false
+        local ui = vim.api.nvim_list_uis()[1]
+        local text = "Traveller - (Empty directory)"
+        local width = #text
+        local center = fm_globals.round((ui.width - width) * 0.5) - 2
+
+        vim.api.nvim_buf_set_extmark(state.buf_id, M.navigation_ns_id, 0, 0, {
+            id = 1,
+            end_row = 0,
+            virt_text = { { text, "Comment" } },
+            virt_text_win_col = center,
+        })
+    else
+        vim.cmd("set cursorline<")
+    end
 
     for i, item_name in ipairs(state.buf_content) do
         if fm_globals.is_item_directory(item_name) then

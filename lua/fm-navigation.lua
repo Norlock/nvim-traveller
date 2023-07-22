@@ -231,16 +231,6 @@ function NavigationState:set_buffer_content(new_dir_path)
     self.buf_content = get_buffer_content()
 
     vim.api.nvim_buf_set_option(self.buf_id, 'modifiable', true)
-
-    if #self.buf_content == 0 then
-        -- TODO empty directory feedback
-        --local ns_id = vim.api.nvim_create_namespace('demo')
-        --vim.api.nvim_buf_set_extmark(self.buf_id, ns_id, 0, 0, {
-            --id = 5,
-            --virt_text = {{"demo", "IncSearch"}},
-            --virt_text_win_col = 0,
-        --})
-    end
     vim.api.nvim_buf_set_lines(self.buf_id, 0, -1, true, self.buf_content)
     vim.api.nvim_buf_set_option(self.buf_id, 'modifiable', false)
 
@@ -330,7 +320,6 @@ function NavigationState:open_navigation()
         if item == nil then
             return
         end
-
 
         if fm_globals.is_item_directory(item) then
             if cmd_str == item_cmd.open then

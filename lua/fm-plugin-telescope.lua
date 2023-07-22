@@ -66,7 +66,7 @@ function M:global_search(state)
                 state:reload_navigation(search_dir .. selected_dir[1])
             end
 
-            if #state.selection == 0 then
+            if #state.selection == 0 and #state.buf_content ~= 0 then
                 self:find_files(state)
             end
         end
