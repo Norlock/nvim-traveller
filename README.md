@@ -79,7 +79,9 @@ Lua:
 ```lua
 local traveller = require('nvim-traveller')
 -- sync_cwd flag is useful for plugin compatibility if you work with multiple projects
-traveller.setup({ replace_netrw = true, sync_cwd = true })
+traveller.setup({ 
+    replace_netrw = true, sync_cwd = true, show_hidden = false,
+})
 
 vim.keymap.set('n', '-', traveller.open_navigation, {})
 

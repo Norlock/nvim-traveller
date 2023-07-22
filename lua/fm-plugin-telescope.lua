@@ -47,16 +47,16 @@ function M:global_search(state)
         local action_state = M.action_state
 
         local function execute_item(opts, callback)
-            local selection = action_state.get_selected_entry()
+            local selected_dir = action_state.get_selected_entry()
 
-            if #selection == 0 then
+            if #selected_dir == 0 then
                 return
             end
 
             actions.close(opts)
 
             callback()
-            state:reload_navigation(search_dir .. selection[1])
+            state:reload_navigation(search_dir .. selected_dir[1])
 
             if #state.selection == 0 then
                 self:find_files(state)
@@ -113,7 +113,6 @@ function M:global_search(state)
             table.insert(output, line)
         end,
     }):sync()
-
 
     self.pickers.new(opts, {
         prompt_title = "Directories",

@@ -63,7 +63,7 @@ function NavigationState:init(options)
     self.dir_path = options.dir_path or get_dir_path()
     self.win_id = vim.api.nvim_get_current_win()
     self.buf_id = vim.api.nvim_create_buf(false, true)
-    self.show_hidden = self.show_hidden or self.show_hidden == nil
+    self.show_hidden = self.show_hidden or mod_options.show_hidden
     self.is_initialized = true
     self.history = {}
     self.selection = options.selection or {}

@@ -41,7 +41,7 @@ function M.open_telescope_search(search_dir, show_hidden)
         state = NavigationState:new()
     end
 
-    fm_telescope:global_search(state, search_dir, show_hidden)
+    fm_telescope:global_search(state)
 end
 
 ---Setup global options
@@ -59,7 +59,6 @@ function M.setup(options)
             end
         })
     end
-
 
     if options.sync_cwd then
         local function change_cwd_callback()
