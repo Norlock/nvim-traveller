@@ -195,16 +195,12 @@ function NavigationState:get_selection_index(item_name)
 end
 
 function NavigationState:close_navigation()
-    local all_bufs = vim.api.nvim_list_bufs()
-
-    for _, buf_id in pairs(all_bufs) do
-        if vim.fn.buflisted(buf_id) == 1 then
-            vim.api.nvim_buf_delete(self.buf_id, {})
-        end
+    if self.buf_id == vim.api.nvim_get_current_buf() then
+        self:close_status_popup()
+        vim.api.nvim_buf_delete(self.buf_id, {})
     end
 end
 
----comment
 ---@return string
 function NavigationState:get_cursor_item()
     local cursor = vim.api.nvim_win_get_cursor(self.win_id)
@@ -235,6 +231,16 @@ function NavigationState:set_buffer_content(new_dir_path)
     self.buf_content = get_buffer_content()
 
     vim.api.nvim_buf_set_option(self.buf_id, 'modifiable', true)
+
+    if #self.buf_content == 0 then
+        -- TODO empty directory feedback
+        --local ns_id = vim.api.nvim_create_namespace('demo')
+        --vim.api.nvim_buf_set_extmark(self.buf_id, ns_id, 0, 0, {
+            --id = 5,
+            --virt_text = {{"demo", "IncSearch"}},
+            --virt_text_win_col = 0,
+        --})
+    end
     vim.api.nvim_buf_set_lines(self.buf_id, 0, -1, true, self.buf_content)
     vim.api.nvim_buf_set_option(self.buf_id, 'modifiable', false)
 
@@ -320,6 +326,11 @@ end
 function NavigationState:open_navigation()
     local function action_on_item(cmd_str)
         local item = self:get_cursor_item()
+
+        if item == nil then
+            return
+        end
+
 
         if fm_globals.is_item_directory(item) then
             if cmd_str == item_cmd.open then
