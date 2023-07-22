@@ -29,6 +29,8 @@ terminal tab) from inside Neovim at the correct location.
 - [x] Use git rm if possible
 - [x] Use git mv if possible
 - [x] Telescope integration with directories
+ - [x] Start with /var, /etc, /mnt or /usr/share to append specific directory searches to the
+ default one
 - [x] Opening terminal at desired location
 - [x] Change cwd to git root if possible (optional)
 - [x] Change cwd to traveller (optional)
@@ -39,7 +41,6 @@ terminal tab) from inside Neovim at the correct location.
   - [ ] Use git mv if possible
 - [x] Selection feedback window in the bottom
 - [x] Resize windows if needed
-  - [ ] Create min width / min height
 - [x] Help menu in popup
 - [ ] Custom keymapping
 - [x] Docs
