@@ -2,14 +2,6 @@ local fm_globals = require("fm-globals")
 local Job = require('plenary.job')
 
 local M = {}
-local specific_dirs = { "/mnt", "/etc", "/var", "/opt", "/srv", "/usr/share" }
-
-local function list_contains(list, input)
-    for _, dir in pairs(list) do
-        if dir == input then return true end
-    end
-    return false
-end
 
 local function init()
     if not package.loaded["telescope"] then
@@ -49,9 +41,7 @@ end
 ---@param state NavigationState
 function M:global_search(state)
     local search_dir = fm_globals.get_home_directory()
-    local specific_dirs_in_query = {}
     local output = {}
-    local picker
 
     local function attach_mappings(prompt_buf_id, map)
         local actions = self.actions
@@ -105,36 +95,6 @@ function M:global_search(state)
             execute_item(opts, function() end)
         end)
 
-        local function search_specific_dir(dir)
-            table.insert(specific_dirs_in_query, dir)
-
-            Job:new({
-                command = 'fd',
-                args = { "--type", "directory", "--base-directory", "/", "--search-path", dir },
-                cwd = "/",
-                on_stdout = function(_, line)
-                    table.insert(output, line)
-                end,
-            }):sync()
-
-            picker.finder = self.finders.new_table({
-                results = output
-            })
-        end
-
-        vim.api.nvim_create_autocmd("TextChangedI", {
-            buffer = prompt_buf_id,
-            callback = function()
-                local line = vim.api.nvim_buf_get_lines(prompt_buf_id, 0, -1, true)[1]
-                local input = line:sub(3)
-
-                if list_contains(specific_dirs, input) and not list_contains(specific_dirs_in_query,
-                        input) then
-                    search_specific_dir(input)
-                end
-            end
-        })
-
         return true
     end
 
@@ -160,15 +120,13 @@ function M:global_search(state)
         end,
     }):sync()
 
-    picker = self.pickers.new(opts, {
+    self.pickers.new(opts, {
         prompt_title = "Directories",
         finder = self.finders.new_table({
             results = output
         }),
         sorter = self.config.file_sorter(opts),
-    })
-
-    picker:find()
+    }):find()
 end
 
 return M
