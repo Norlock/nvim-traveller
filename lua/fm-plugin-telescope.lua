@@ -57,7 +57,10 @@ function M:global_search(state)
 
             callback()
             state:reload_navigation(search_dir .. selection[1])
-            self:find_files(state)
+
+            if #state.selection == 0 then
+                self:find_files(state)
+            end
         end
 
         actions.select_all:replace(function() end)
