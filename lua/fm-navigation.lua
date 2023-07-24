@@ -422,6 +422,10 @@ function NavigationState:open_navigation()
         popup:set_keymap('n', '<Cr>', confirm_delete_callback)
     end
 
+    local function navigate_to_root_directory()
+        self:set_buffer_content("/")
+    end
+
     local function navigate_to_home_directory()
         self:set_buffer_content(vim.fn.expand('$HOME') .. "/")
     end
@@ -450,12 +454,13 @@ function NavigationState:open_navigation()
     vim.keymap.set('n', '<Left>', function() self:navigate_to_parent() end, buffer_options)
     vim.keymap.set('n', 'h', function() self:navigate_to_parent() end, buffer_options)
     vim.keymap.set('n', '?', function() fm_popup.create_help_popup() end, buffer_options)
-    vim.keymap.set('n', '<A-.>', function() self:toggle_hidden() end, buffer_options)
+    vim.keymap.set('n', '.', function() self:toggle_hidden() end, buffer_options)
     vim.keymap.set('n', 'y', function() self:add_to_selection() end, buffer_options)
     vim.keymap.set('n', 'u', function() self:undo_selection() end, buffer_options)
     vim.keymap.set('n', 'pm', function() self:paste_selection(false) end, buffer_options)
     vim.keymap.set('n', 'pc', function() self:paste_selection(true) end, buffer_options)
     vim.keymap.set('n', '~', navigate_to_home_directory, buffer_options)
+    vim.keymap.set('n', 'g/', navigate_to_root_directory, buffer_options)
 
     -- Plugin integration
     vim.keymap.set('n', 'f', function() fm_telescope:find_files(self) end, buffer_options)

@@ -149,8 +149,9 @@ function M.open_shell(rel_path)
 end
 
 function M.is_file_binary(file_path)
-    local output = vim.fn.systemlist("file --mime " .. file_path .. " | grep charset=binary")
-    return #output ~= 0
+    return false
+    --local output = vim.fn.systemlist("file --mime " .. file_path .. " | grep charset=binary")
+    --return #output ~= 0
 end
 
 return M
