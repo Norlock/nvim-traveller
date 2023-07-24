@@ -195,15 +195,13 @@ function NavigationState:get_selection_index(item_name)
 end
 
 function NavigationState:close_navigation()
-    if self.buf_id == vim.api.nvim_get_current_buf() then
-        self:close_status_popup()
-        vim.api.nvim_buf_delete(self.buf_id, {})
-    end
+    self:close_status_popup()
+    vim.api.nvim_buf_delete(self.buf_id, {})
 end
 
 ---@return string
 function NavigationState:get_cursor_item()
-    local cursor = vim.api.nvim_win_get_cursor(self.win_id)
+    local cursor = vim.api.nvim_win_get_cursor(0)
     return self.buf_content[cursor[1]]
 end
 

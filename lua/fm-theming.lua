@@ -22,7 +22,7 @@ end
 function M.add_cmd_popup_theming(state)
     vim.api.nvim_set_hl(M.popup_ns_id, 'FloatTitle', { link = "Question" })
     vim.api.nvim_set_hl(M.popup_ns_id, 'FloatBorder', {})
-    vim.api.nvim_set_hl(M.popup_ns_id, 'NormalFloat', { italic = true })
+    vim.api.nvim_set_hl(M.popup_ns_id, 'NormalFloat', {})
 
     vim.api.nvim_win_set_hl_ns(state.win_id, M.popup_ns_id)
 end
