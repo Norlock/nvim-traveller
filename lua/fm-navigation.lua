@@ -342,6 +342,7 @@ function NavigationState:open_navigation()
             else
                 local file_rel = path:new(self.dir_path .. item):make_relative()
                 vim.cmd(cmd_str .. ' ' .. file_rel)
+                self:close_navigation()
             end
         end
     end
