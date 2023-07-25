@@ -85,15 +85,15 @@ traveller.setup({
 })
 
 vim.keymap.set('n', '-', traveller.open_navigation, {})
-
--- Really fast navigation through directories with traveller compatibility
-vim.keymap.set('n', '<leader>d', traveller.open_telescope_search, silent_options) 
+vim.keymap.set('n', '<leader>d', traveller.open_telescope_search, silent_options)
+vim.keymap.set('n', '<leader>o', traveller.open_terminal, silent_options) -- Opens terminal with path of buffer
 ```
 
 Viml:
 ```viml
 nnoremap - <cmd>lua require('nvim-traveller').open_navigation()<cr>
 nnoremap <leader>d <cmd>lua require('nvim-traveller').open_telescope_search()<cr>
+nnoremap <leader>o <cmd>lua require('nvim-traveller').open_terminal()<cr>
 ```
 
 - When navigation is openend press ? for more info

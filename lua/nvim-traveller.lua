@@ -1,6 +1,8 @@
 local NavigationState = require("fm-navigation")
 local fm_globals = require("fm-globals")
 local fm_telescope = require("fm-plugin-telescope")
+local path = require("plenary.path")
+local fm_shell = require("fm-shell")
 
 local state = {}
 local M = {}
@@ -40,6 +42,15 @@ function M.open_telescope_search(search_dir, show_hidden)
     fm_telescope:global_search(state)
 end
 
+function M.open_terminal()
+    local fd = vim.fn.expand('%:p:h')
+
+    if vim.fn.isdirectory(fd) == 1 then
+        local abs = path:new(fd):absolute()
+        fm_shell.open_terminal(abs)
+    end
+end
+
 ---Setup global options
 ---@param options ModOptions
 function M.setup(options)
@@ -51,7 +62,7 @@ function M.setup(options)
 
                 if vim.bo.filetype == "netrw" then
                     vim.cmd("bw")
-                    vim.bo.buftype= "nofile"
+                    vim.bo.buftype = "nofile"
                     vim.bo.bufhidden = "hide"
                     vim.bo.buflisted = false
                     M.open_navigation()
