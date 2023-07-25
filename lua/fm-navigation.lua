@@ -73,6 +73,7 @@ function NavigationState:init(options)
         buffer = self.buf_id,
         callback = function()
             self:close_status_popup()
+            fm_theming.remove_navigation(self)
         end
     })
 end

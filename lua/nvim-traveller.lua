@@ -18,12 +18,8 @@ function M.close_navigation()
 end
 
 function M.open_navigation()
-    local function is_open()
-        return vim.api.nvim_get_current_buf() == state.buf_id
-    end
-
     if state.is_initialized then
-        if not is_open() then
+        if vim.api.nvim_get_current_buf() ~= state.buf_id then
             state:init()
             state:open_navigation()
         end
@@ -54,6 +50,10 @@ function M.setup(options)
                 vim.api.nvim_del_augroup_by_name("FileExplorer")
 
                 if vim.bo.filetype == "netrw" then
+                    vim.cmd("bw")
+                    vim.bo.buftype= "nofile"
+                    vim.bo.bufhidden = "hide"
+                    vim.bo.buflisted = false
                     M.open_navigation()
                 end
             end

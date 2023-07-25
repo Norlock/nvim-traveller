@@ -76,6 +76,9 @@ function M:global_search(state)
         actions.select_tab:replace(function(opts)
             execute_item(opts, function()
                 vim.cmd("tabnew")
+                --vim.cmd('set bufhidden="hide"')
+                vim.bo.bufhidden = "hide"
+                vim.bo.buflisted = false
             end)
         end)
 

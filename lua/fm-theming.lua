@@ -8,6 +8,11 @@ local M = {
 }
 
 ---@param state NavigationState
+function M.remove_navigation(state)
+    vim.api.nvim_win_set_hl_ns(state.win_id, 0)
+end
+
+---@param state NavigationState
 function M.add_navigation_theming(state)
     vim.opt.cursorline = true
 
