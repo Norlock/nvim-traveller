@@ -313,6 +313,16 @@ function NavigationState:navigate_to_parent()
 end
 
 function NavigationState:open_navigation()
+    -- Needs to happen here before new buffer gets loaded
+    local fn = vim.fn.expand('%:t')
+
+    vim.api.nvim_set_current_buf(self.buf_id)
+
+    fm_theming.add_navigation_theming(self)
+    self:init_status_popup()
+
+    local buffer_options = { silent = true, buffer = self.buf_id }
+
     local function action_on_item(cmd_str)
         local item = self:get_cursor_item()
 
@@ -335,18 +345,6 @@ function NavigationState:open_navigation()
             end
         end
     end
-
-    -- Needs to happen here before new buffer gets loaded
-    local fn = vim.fn.expand('%:t')
-
-    vim.api.nvim_win_set_buf(self.win_id, self.buf_id)
-
-    --vim.cmd("file! Traveller (help: ?)") TODO fix
-
-    fm_theming.add_navigation_theming(self)
-    self:init_status_popup()
-
-    local buffer_options = { silent = true, buffer = self.buf_id }
 
     ---@param popup Popup
     ---@param sh_cmd string
