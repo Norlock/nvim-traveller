@@ -43,11 +43,15 @@ function M.open_telescope_search(search_dir, show_hidden)
 end
 
 function M.open_terminal()
-    local fd = vim.fn.expand('%:p:h')
-
-    if vim.fn.isdirectory(fd) == 1 then
-        local abs = path:new(fd):absolute()
+    if state.is_initialized then
         fm_shell.open_terminal(abs)
+    else
+        local fd = vim.fn.expand('%:p:h')
+
+        if vim.fn.isdirectory(fd) == 1 then
+            local abs = path:new(fd):absolute()
+            fm_shell.open_terminal(abs)
+        end
     end
 end
 

@@ -43,7 +43,7 @@ function M:global_search(state)
     local search_dir = fm_globals.get_home_directory()
     local output = {}
 
-    local function attach_mappings(prompt_buf_id, map)
+    local function attach_mappings(_, _)
         local actions = self.actions
         local action_state = self.action_state
 
