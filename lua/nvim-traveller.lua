@@ -43,15 +43,11 @@ function M.open_telescope_search(search_dir, show_hidden)
 end
 
 function M.open_terminal()
-    if state.is_initialized then
-        fm_shell.open_terminal(abs)
-    else
-        local fd = vim.fn.expand('%:p:h')
+    local fd = vim.fn.expand('%:p:h')
 
-        if vim.fn.isdirectory(fd) == 1 then
-            local abs = path:new(fd):absolute()
-            fm_shell.open_terminal(abs)
-        end
+    if vim.fn.isdirectory(fd) == 1 then
+        local abs = path:new(fd):absolute()
+        fm_shell.open_terminal(abs)
     end
 end
 
@@ -64,10 +60,10 @@ function M.setup(options)
             callback = function()
                 vim.api.nvim_del_augroup_by_name("FileExplorer")
 
-                if vim.bo.filetype == "netrw" then
-                    vim.cmd("bw")
+                local filetype = vim.bo.filetype
+                if filetype == "netrw" or filetype == "" then
                     vim.bo.buftype = "nofile"
-                    vim.bo.bufhidden = "hide"
+                    vim.bo.bufhidden = "wipe"
                     vim.bo.buflisted = false
                     M.open_navigation()
                 end

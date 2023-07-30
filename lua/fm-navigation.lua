@@ -69,6 +69,8 @@ function NavigationState:init(options)
     self.selection = options.selection or {}
     self.buf_content = {}
 
+    vim.bo[self.buf_id].bufhidden = "wipe"
+
     vim.api.nvim_create_autocmd({ "BufHidden" }, {
         buffer = self.buf_id,
         callback = function()
@@ -193,11 +195,6 @@ function NavigationState:get_selection_index(item_name)
         end
     end
     return -1
-end
-
-function NavigationState:close_navigation()
-    self:close_status_popup()
-    vim.api.nvim_buf_delete(self.buf_id, {})
 end
 
 ---@return string
@@ -342,7 +339,6 @@ function NavigationState:open_navigation()
             else
                 local file_rel = path:new(self.dir_path .. item):make_relative()
                 vim.cmd(cmd_str .. ' ' .. file_rel)
-                self:close_navigation()
             end
         end
     end
@@ -428,8 +424,12 @@ function NavigationState:open_navigation()
         self:set_buffer_content(vim.fn.expand('$HOME') .. "/")
     end
 
-    vim.keymap.set('n', 'q', function() self:close_navigation() end, buffer_options)
-    vim.keymap.set('n', '<Esc>', function() self:close_navigation() end, buffer_options)
+    local function close()
+        vim.cmd("silent! e #")
+    end
+
+    vim.keymap.set('n', 'q', close, buffer_options)
+    vim.keymap.set('n', '<Esc>', close, buffer_options)
     vim.keymap.set('n', '<Right>', function() action_on_item(item_cmd.open) end, buffer_options)
     vim.keymap.set('n', 'l', function() action_on_item(item_cmd.open) end, buffer_options)
     vim.keymap.set('n', '<Cr>', function() action_on_item(item_cmd.open) end, buffer_options)
