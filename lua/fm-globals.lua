@@ -11,12 +11,16 @@ end
 
 local path = vim.fn.stdpath('log') .. '/nvim-traveller.log'
 
-function M.debug(val)
+function M.debug(val, label)
     local filewrite = io.open(path, "a+")
 
     if filewrite == nil then
         print("Can't open debug file")
         return
+    end
+
+    if label ~= nil then
+        filewrite:write("--" .. label .. "\n")
     end
 
     filewrite:write(vim.inspect(val) .. "\n\n")
@@ -56,12 +60,16 @@ function M.item_is_part_of_git_repo(dir_path, item)
     return #vim.fn.systemlist(sh_cmd) == 0
 end
 
-function M.set_cwd_to_git_root(dir_path)
+function M.get_git_root(dir_path)
     local sh_cmd = "cd " .. dir_path .. " && git rev-parse --show-toplevel" .. M.only_stdout
-    local output = vim.fn.systemlist(sh_cmd)
+    return vim.fn.systemlist(sh_cmd)
+end
 
-    if #output ~= 0 then
-        vim.cmd("cd " .. output[1])
+function M.set_cwd_to_git_root(dir_path)
+    local git_root = M.get_git_root(dir_path)
+
+    if #git_root ~= 0 then
+        vim.cmd("cd " .. git_root[1])
     end
 end
 

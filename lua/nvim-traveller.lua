@@ -31,6 +31,10 @@ function M.open_navigation()
     end
 end
 
+function M.buffers()
+    fm_telescope:list_project_buffers();
+end
+
 ---Searches directories and opens traveller / (or a terminal with C-t)
 ---@param search_dir string absolute directory to start search from
 ---@param show_hidden boolean show hidden files or not

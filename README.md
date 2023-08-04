@@ -39,6 +39,7 @@ terminal tab) from inside Neovim at the correct location.
 - [x] Being able to delete selected items (using git rm if possible)
 - [x] Being able to move / copy selected items
   - [ ] Use git mv if possible
+- [x] Project buffers
 - [x] Selection feedback window in the bottom
 - [x] Resize windows if needed
 - [x] Help menu in popup
@@ -85,9 +86,11 @@ traveller.setup({
 })
 
 vim.keymap.set('n', '-', traveller.open_navigation, {})
-vim.keymap.set('n', '<leader>d', traveller.open_telescope_search, silent_options)
-vim.keymap.set('n', '<leader>o', traveller.open_terminal, silent_options) -- Opens terminal with path of buffer
-```
+-- Opens quick directory search
+vim.keymap.set('n', '<leader>d', traveller.open_telescope_search, {})
+vim.keymap.set('n', '<leader>o', traveller.open_terminal, {})
+-- Better suited for multi-project use and integrates with harpoon
+vim.keymap.set('n', '<leader>b', traveller.buffers, {}) 
 
 Viml:
 ```viml
