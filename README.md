@@ -1,5 +1,6 @@
 # nvim-traveller
-A file manager inside Neovim. 
+A file manager inside Neovim. take a look at github.com/norlock/nvim-traveller-buffers for a good
+complementary plugin for buffers
 
 ### What makes this file manager different than others?
 
@@ -39,7 +40,7 @@ terminal tab) from inside Neovim at the correct location.
 - [x] Being able to delete selected items (using git rm if possible)
 - [x] Being able to move / copy selected items
   - [ ] Use git mv if possible
-- [x] Project buffers
+- [x] Project buffers (see nvim-traveller-buffers)
 - [x] Selection feedback window in the bottom
 - [x] Resize windows if needed
 - [x] Help menu in popup
@@ -89,8 +90,6 @@ vim.keymap.set('n', '-', traveller.open_navigation, {})
 -- Opens quick directory search
 vim.keymap.set('n', '<leader>d', traveller.open_telescope_search, {})
 vim.keymap.set('n', '<leader>o', traveller.open_terminal, {})
--- Better suited for multi-project use and integrates with harpoon
-vim.keymap.set('n', '<leader>b', traveller.buffers, {}) 
 
 Viml:
 ```viml

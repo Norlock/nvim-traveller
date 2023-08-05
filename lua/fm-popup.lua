@@ -279,12 +279,6 @@ function M.create_help_popup()
         " ",
         " -- Telescope search directory",
         " [<Cr> / t / v / s]        Open directory in traveller",
-        " ",
-        " -- Project buffers",
-        " [<Tab>]                   Switch between project buffers and other buffers",
-        " [<C-h>]                   Toggle file for harpoon",
-        " [<C-d>]                   Delete buffer from the list"
-        " [<C-f> / <C-b>]           Scroll in previewer"
     }
 
     local function init()
