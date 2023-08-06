@@ -9,10 +9,10 @@ function M.is_item_directory(item)
     return item:sub(- #ending) == ending
 end
 
-local path = vim.fn.stdpath('log') .. '/nvim-traveller.log'
+local log_path = vim.fn.stdpath('log') .. '/nvim-traveller.log'
 
 function M.debug(val, label)
-    local filewrite = io.open(path, "a+")
+    local filewrite = io.open(log_path, "a+")
 
     if filewrite == nil then
         print("Can't open debug file")

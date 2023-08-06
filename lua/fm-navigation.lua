@@ -220,9 +220,7 @@ function NavigationState:set_buffer_content(new_dir_path)
 
     self.dir_path = new_dir_path
 
-    if mod_options.sync_cwd then
-        vim.cmd("cd " .. self.dir_path)
-    end
+    vim.cmd("cd " .. self.dir_path)
 
     self.buf_content = get_buffer_content()
 
@@ -457,7 +455,7 @@ function NavigationState:open_navigation()
     vim.keymap.set('n', 'u', function() self:undo_selection() end, buffer_options)
     vim.keymap.set('n', 'pm', function() self:paste_selection(false) end, buffer_options)
     vim.keymap.set('n', 'pc', function() self:paste_selection(true) end, buffer_options)
-    vim.keymap.set('n', '~', navigate_to_home_directory, buffer_options)
+    vim.keymap.set('n', 'gh', navigate_to_home_directory, buffer_options)
     vim.keymap.set('n', 'g/', navigate_to_root_directory, buffer_options)
 
     -- Plugin integration

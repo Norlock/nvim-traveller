@@ -256,7 +256,7 @@ function M.create_help_popup()
         " [l / <Right> / <Cr>]      Navigate to directory or open item",
         " [q / <Esc>]               Close popup / navigation",
         " [.]                       Toggle hidden or all files",
-        " [~]                       Navigate to the home directory",
+        " [gh]                      Navigate to the home directory",
         " [g/]                      Navigate to the root directory",
         " ",
         " -- Commands",
@@ -279,6 +279,8 @@ function M.create_help_popup()
         " ",
         " -- Telescope search directory",
         " [<Cr> / t / v / s]        Open directory in traveller",
+        " [<Tab>]                   Toggle all directories / last used ones",
+        " [<C-d>]                   Remove directory from the last used list",
     }
 
     local function init()

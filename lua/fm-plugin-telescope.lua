@@ -1,5 +1,7 @@
 local fm_globals = require("fm-globals")
 local Job = require('plenary.job')
+local persist = require("persist-data")
+local mod_options = {}
 
 local M = {}
 
@@ -22,6 +24,10 @@ function M:find_files(state)
     M.builtin.find_files({ cwd = state.dir_path })
 end
 
+function M.set_mod_options(options)
+    mod_options = options
+end
+
 ---@param state NavigationState
 function M:live_grep(state)
     if self.builtin == nil then
@@ -32,13 +38,50 @@ function M:live_grep(state)
 end
 
 ---@param state NavigationState
-function M:global_search(state)
+function M:directories_search(state, show_last_used)
     local search_dir = fm_globals.get_home_directory()
-    local output = {}
+    local last_used_dirs = persist.last_used_dirs()
 
-    local function attach_mappings(_, _)
+    if #last_used_dirs == 0 then
+        show_last_used = false
+    end
+
+    local all_dirs = {}
+
+    local function get_results()
+        if show_last_used then
+            return last_used_dirs
+        else
+            return all_dirs
+        end
+    end
+
+    local function attach_mappings(_, map)
         local actions = self.actions
         local action_state = self.action_state
+        local mappings = mod_options.mappings or {}
+
+        map('i', mappings.directories_tab or "<Tab>", function()
+            show_last_used = not show_last_used
+
+            self.picker:refresh(self.finders.new_table({
+                results = get_results()
+            }))
+        end)
+
+        map('i', mod_options.directories_delete or "<C-d>", function()
+            local selected_dir = action_state.get_selected_entry()[1]
+
+            if selected_dir == nil or not show_last_used then
+                return
+            end
+
+            last_used_dirs = persist.remove(selected_dir)
+
+            self.picker:refresh(self.finders.new_table({
+                results = last_used_dirs
+            }))
+        end)
 
         local function execute_item(opts, callback)
             local selected_dir = action_state.get_selected_entry()
@@ -51,19 +94,17 @@ function M:global_search(state)
 
             callback()
 
-            local dir = selected_dir[1]
-
-            if dir:sub(1, 1) == "/" then
-                state:reload_navigation(dir)
-            else
-                state:reload_navigation(search_dir .. selected_dir[1])
-            end
+            local selected_item = selected_dir[1]
+            local dir_path = search_dir .. selected_item
+            state:reload_navigation(dir_path)
+            persist.store_data(selected_item)
 
             if #state.selection == 0 and #state.buf_content ~= 0 then
                 self:find_files(state)
             end
         end
 
+        actions.toggle_selection:replace(function() end)
         actions.select_all:replace(function() end)
 
         actions.select_tab:replace(function(opts)
@@ -102,7 +143,7 @@ function M:global_search(state)
         args = { "--type", "directory", "--base-directory", search_dir },
         cwd = search_dir,
         on_stdout = function(_, line)
-            table.insert(output, line)
+            table.insert(all_dirs, line)
         end,
     }):sync()
 
@@ -111,17 +152,19 @@ function M:global_search(state)
         args = { "--type", "directory", "--base-directory", search_dir, ".", ".config" },
         cwd = search_dir,
         on_stdout = function(_, line)
-            table.insert(output, line)
+            table.insert(all_dirs, line)
         end,
     }):sync()
 
-    self.pickers.new(opts, {
-        prompt_title = "Directories",
+    self.picker = self.pickers.new(opts, {
+        prompt_title = "Directories (Tab)",
         finder = self.finders.new_table({
-            results = output
+            results = get_results()
         }),
         sorter = self.config.file_sorter(opts),
-    }):find()
+    })
+
+    self.picker:find()
 end
 
 return M

@@ -30,8 +30,7 @@ terminal tab) from inside Neovim at the correct location.
 - [x] Use git rm if possible
 - [x] Use git mv if possible
 - [x] Telescope integration with directories
- - [x] Start with /var, /etc, /mnt or /usr/share to append specific directory searches to the
- default one
+- [x] Show last visited directories
 - [x] Opening terminal at desired location
 - [x] Change cwd to git root if possible (optional)
 - [x] Change cwd to traveller (optional)
@@ -80,21 +79,24 @@ Plug 'norlock/nvim-traveller'
 
 Lua:
 ```lua
-local traveller = require('nvim-traveller')
--- sync_cwd flag is useful for plugin compatibility if you work with multiple projects
-traveller.setup({ 
-    replace_netrw = true, sync_cwd = true, show_hidden = false,
+local traveller = require('nvim-traveller').setup({
+    show_hidden = false,
+    mappings = {
+        -- directories overview
+        directories_tab = "<Tab>",
+        directories_delete = "<C-d>"
+    }
 })
 
 vim.keymap.set('n', '-', traveller.open_navigation, {})
--- Opens quick directory search
-vim.keymap.set('n', '<leader>d', traveller.open_telescope_search, {})
+-- Opens quick directory search (Tab to display all directories)
+vim.keymap.set('n', '<leader>d', traveller.last_directories_search, {})
 vim.keymap.set('n', '<leader>o', traveller.open_terminal, {})
 
 Viml:
 ```viml
 nnoremap - <cmd>lua require('nvim-traveller').open_navigation()<cr>
-nnoremap <leader>d <cmd>lua require('nvim-traveller').open_telescope_search()<cr>
+nnoremap <leader>d <cmd>lua require('nvim-traveller').last_directories_search()<cr>
 nnoremap <leader>o <cmd>lua require('nvim-traveller').open_terminal()<cr>
 ```
 
