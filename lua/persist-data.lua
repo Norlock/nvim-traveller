@@ -25,7 +25,6 @@ local function retrieve_data()
         json_str = json_str .. item
     end
 
-    fm_globals.debug(json_str, "json_str")
     return vim.fn.json_decode(json_str)
 end
 
