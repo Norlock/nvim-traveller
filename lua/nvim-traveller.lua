@@ -1,6 +1,6 @@
 local NavigationState = require("fm-navigation")
 local fm_globals = require("fm-globals")
-local fm_telescope = require("fm-plugin-telescope")
+local fm_telescope = require("plugin-telescope")
 local path = require("plenary.path")
 local fm_shell = require("fm-shell")
 
@@ -31,6 +31,7 @@ function M.open_navigation()
 end
 
 ---Searches directories and opens traveller
+---deprecated (use all_directories_search / last_directories_search)
 function M.open_telescope_search()
     M.last_directories_search()
 end

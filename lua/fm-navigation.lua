@@ -1,7 +1,7 @@
 local fm_globals = require("fm-globals")
 local fm_theming = require("fm-theming")
 local fm_popup = require("fm-popup")
-local fm_telescope = require("fm-plugin-telescope")
+local fm_telescope = require("plugin-telescope")
 local fm_shell = require("fm-shell")
 
 local path = require("plenary.path")
@@ -312,6 +312,7 @@ function NavigationState:open_navigation()
     local fn = vim.fn.expand('%:t')
 
     vim.api.nvim_set_current_buf(self.buf_id)
+    vim.cmd("file Traveller")
 
     fm_theming.add_navigation_theming(self)
     self:init_status_popup()
