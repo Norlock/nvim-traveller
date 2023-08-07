@@ -139,7 +139,10 @@ end
 
 function M.open_terminal(abs_path)
     local term = vim.fn.expand("$TERM")
-    vim.fn.jobstart(term, { cwd = abs_path, detach = true })
+
+    local root = fm_globals.get_git_root(abs_path) or abs_path;
+
+    vim.fn.jobstart(term, { cwd = root, detach = true })
 end
 
 function M.open_shell(rel_path)

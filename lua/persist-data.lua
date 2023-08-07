@@ -31,9 +31,14 @@ end
 local history = retrieve_data()
 
 local function update_history(dir_path)
+    local function compare(a, b)
+        return a.last_used < b.last_used
+    end
+
     for _, item in pairs(history) do
         if item.dir_path == dir_path then
             item.last_used = os.time()
+            table.sort(history, compare)
             return item
         end
     end
@@ -42,10 +47,6 @@ local function update_history(dir_path)
         dir_path = dir_path,
         last_used = os.time()
     })
-
-    local function compare(a, b)
-        return a.last_used < b.last_used
-    end
 
     table.sort(history, compare)
 

@@ -62,14 +62,14 @@ end
 
 function M.get_git_root(dir_path)
     local sh_cmd = "cd " .. dir_path .. " && git rev-parse --show-toplevel" .. M.only_stdout
-    return vim.fn.systemlist(sh_cmd)
+    return vim.fn.systemlist(sh_cmd)[1]
 end
 
 function M.set_cwd_to_git_root(dir_path)
     local git_root = M.get_git_root(dir_path)
 
-    if #git_root ~= 0 then
-        vim.cmd("cd " .. git_root[1])
+    if git_root ~= nil then
+        vim.cmd("cd " .. git_root)
     end
 end
 

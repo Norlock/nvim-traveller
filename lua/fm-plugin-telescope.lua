@@ -84,9 +84,9 @@ function M:directories_search(state, show_last_used)
         end)
 
         local function execute_item(opts, callback)
-            local selected_dir = action_state.get_selected_entry()
+            local selected_entry = action_state.get_selected_entry()
 
-            if #selected_dir == 0 then
+            if #selected_entry == 0 then
                 return
             end
 
@@ -94,7 +94,7 @@ function M:directories_search(state, show_last_used)
 
             callback()
 
-            local selected_item = selected_dir[1]
+            local selected_item = selected_entry[1]
             local dir_path = search_dir .. selected_item
             state:reload_navigation(dir_path)
             persist.store_data(selected_item)
