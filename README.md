@@ -96,6 +96,7 @@ vim.keymap.set('n', '<leader>o', traveller.open_terminal, {})
 Viml:
 ```viml
 nnoremap - <cmd>lua require('nvim-traveller').open_navigation()<cr>
+-- Opens quick directory search (Tab to display all directories)
 nnoremap <leader>d <cmd>lua require('nvim-traveller').last_directories_search()<cr>
 nnoremap <leader>o <cmd>lua require('nvim-traveller').open_terminal()<cr>
 ```

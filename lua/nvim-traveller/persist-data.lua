@@ -1,10 +1,11 @@
-local fm_globals = require("fm-globals")
+local fm_globals = require("nvim-traveller.fm-globals")
 
 local M = {}
 
 local data_path = vim.fn.stdpath('data') .. '/nvim-traveller.json'
 
 local function retrieve_data()
+    fm_globals.debug("history test");
     if vim.fn.filereadable(data_path) == 0 then
         local filewrite = io.open(data_path, "w")
 
@@ -19,6 +20,7 @@ local function retrieve_data()
     end
 
     local file_output = vim.fn.readfile(data_path)
+    fm_globals.debug(file_output, "history");
     local json_str = ""
 
     for _, item in pairs(file_output) do

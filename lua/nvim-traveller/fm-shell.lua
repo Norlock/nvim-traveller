@@ -1,4 +1,4 @@
-local fm_globals = require("fm-globals")
+local fm_globals = require("nvim-traveller.fm-globals")
 
 local M = {}
 

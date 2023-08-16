@@ -1,6 +1,6 @@
-local fm_globals = require("fm-globals")
+local fm_globals = require("nvim-traveller.fm-globals")
 local Job = require('plenary.job')
-local persist = require("persist-data")
+local persist = require("nvim-traveller.persist-data")
 local mod_options = {}
 
 local M = {}
@@ -39,8 +39,11 @@ end
 
 ---@param state NavigationState
 function M:directories_search(state, show_last_used)
+    fm_globals.debug("test");
     local search_dir = fm_globals.get_home_directory()
+    fm_globals.debug(search_dir, "test");
     local last_used_dirs = persist.last_used_dirs()
+    fm_globals.debug(last_used_dirs, "test");
 
     if #last_used_dirs == 0 then
         show_last_used = false

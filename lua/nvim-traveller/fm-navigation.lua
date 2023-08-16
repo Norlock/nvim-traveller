@@ -1,11 +1,11 @@
-local fm_globals = require("fm-globals")
-local fm_theming = require("fm-theming")
-local fm_popup = require("fm-popup")
-local fm_telescope = require("plugin-telescope")
-local fm_shell = require("fm-shell")
+local fm_globals = require("nvim-traveller.fm-globals")
+local fm_theming = require("nvim-traveller.fm-theming")
+local fm_popup = require("nvim-traveller.fm-popup")
+local fm_telescope = require("nvim-traveller.plugin-telescope")
+local fm_shell = require("nvim-traveller.fm-shell")
 
 local path = require("plenary.path")
-local Location = require("fm-location")
+local Location = require("nvim-traveller.fm-location")
 
 local item_cmd = {
     open = 'e',

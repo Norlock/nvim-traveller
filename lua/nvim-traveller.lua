@@ -1,8 +1,8 @@
-local NavigationState = require("fm-navigation")
-local fm_globals = require("fm-globals")
-local fm_telescope = require("plugin-telescope")
+local NavigationState = require("nvim-traveller.fm-navigation")
+local fm_globals = require("nvim-traveller.fm-globals")
+local fm_telescope = require("nvim-traveller.plugin-telescope")
 local path = require("plenary.path")
-local fm_shell = require("fm-shell")
+local fm_shell = require("nvim-traveller.fm-shell")
 
 local state = {}
 local M = {}
