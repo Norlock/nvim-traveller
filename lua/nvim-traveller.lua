@@ -1,4 +1,4 @@
-local NavigationState = require("nvim-traveller.fm-navigation")
+local NavigationState = require("nvim-traveller.navigation")
 local fm_globals = require("nvim-traveller.fm-globals")
 local fm_telescope = require("nvim-traveller.plugin-telescope")
 local path = require("plenary.path")
@@ -68,8 +68,9 @@ function M.setup(options)
         callback = function()
             vim.api.nvim_del_augroup_by_name("FileExplorer")
 
+            local fn = vim.fn.expand('%:t')
             local filetype = vim.bo.filetype
-            if filetype == "netrw" or filetype == "" then
+            if filetype == "netrw" or fn == "" then
                 vim.bo.buftype = "nofile"
                 vim.bo.bufhidden = "wipe"
                 vim.bo.buflisted = false
