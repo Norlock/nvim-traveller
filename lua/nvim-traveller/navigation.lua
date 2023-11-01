@@ -333,7 +333,7 @@ function NavigationState:open_navigation()
         else
             local abs_path = path:new(self.dir_path .. item):absolute()
 
-            if fm_shell.is_file_binary(abs_path) then
+            if fm_shell.is_file_binary(abs_path) and false then
                 vim.fn.jobstart("open " .. abs_path, { detach = true })
             else
                 local file_rel = path:new(self.dir_path .. item):make_relative()

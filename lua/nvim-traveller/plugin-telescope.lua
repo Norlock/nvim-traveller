@@ -39,9 +39,7 @@ end
 
 ---@param state NavigationState
 function M:directories_search(state, show_last_used)
-    fm_globals.debug("test");
     local search_dir = fm_globals.get_home_directory()
-    fm_globals.debug(search_dir, "test");
     local last_used_dirs = persist.last_used_dirs()
     fm_globals.debug(last_used_dirs, "test");
 

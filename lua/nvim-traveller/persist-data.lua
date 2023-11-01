@@ -34,7 +34,7 @@ local history = retrieve_data()
 
 local function update_history(dir_path)
     local function compare(a, b)
-        return a.last_used < b.last_used
+        return b.last_used < a.last_used
     end
 
     for _, item in pairs(history) do
@@ -52,7 +52,7 @@ local function update_history(dir_path)
 
     table.sort(history, compare)
 
-    while 10 < #history do
+    while 15 < #history do
         table.remove(history, #history)
     end
 end
