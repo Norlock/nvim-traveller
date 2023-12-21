@@ -337,7 +337,7 @@ function NavigationState:open_navigation()
                 vim.fn.jobstart("open " .. abs_path, { detach = true })
             else
                 local file_rel = path:new(self.dir_path .. item):make_relative()
-                vim.cmd(cmd_str .. ' ' .. file_rel)
+                vim.cmd(cmd_str .. ' ./' .. file_rel)
             end
         end
     end
