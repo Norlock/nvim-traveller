@@ -5,6 +5,7 @@ local fm_telescope = require("nvim-traveller.plugin-telescope")
 local fm_shell = require("nvim-traveller.fm-shell")
 
 local path = require("plenary.path")
+local plenary = require("plenary")
 local Location = require("nvim-traveller.fm-location")
 
 local item_cmd = {
@@ -207,15 +208,24 @@ function NavigationState:set_buffer_content(new_dir_path)
     assert(fm_globals.is_item_directory(new_dir_path), "Passed path is not a directory")
 
     local function get_buffer_content()
-        local function get_cmd_prefix()
+        local function get_cmd_prefix(param)
             if self.show_hidden then
-                return "ls -pAL "
+                return "ls -pAL" .. param .. " "
             else
-                return "ls -pL "
+                return "ls -pL" .. param .. " "
             end
         end
 
-        return vim.fn.systemlist(get_cmd_prefix() .. new_dir_path)
+        local paths = vim.fn.systemlist(get_cmd_prefix("Q") .. new_dir_path)
+        
+        -- TODO fix display + result
+        --local display = vim.fn.systemlist(get_cmd_prefix("") .. new_dir_path)
+        --local ls_result = {
+            --display, 
+            --paths
+        --}
+
+        return paths;
     end
 
     self.dir_path = new_dir_path
@@ -328,7 +338,10 @@ function NavigationState:open_navigation()
 
         if fm_globals.is_item_directory(item) then
             if cmd_str == item_cmd.open then
-                self:set_buffer_content(self.dir_path .. item)
+                local abs_path = path:new(self.dir_path .. item):absolute()
+                print(vim.inspect(abs_path))
+
+                self:set_buffer_content(abs_path)
             end
         else
             local abs_path = path:new(self.dir_path .. item):absolute()
@@ -427,6 +440,14 @@ function NavigationState:open_navigation()
         vim.cmd("silent! e #")
     end
 
+    local function change_cwd_callback()
+        local fd = vim.fn.expand('%:p:h')
+
+        if vim.fn.isdirectory(fd) == 1 then
+            fm_globals.set_cwd_to_git_root(fd)
+        end
+    end
+
     vim.keymap.set('n', 'q', close, buffer_options)
     vim.keymap.set('n', '<Esc>', close, buffer_options)
     vim.keymap.set('n', '<Right>', function() action_on_item(item_cmd.open) end, buffer_options)
@@ -435,6 +456,7 @@ function NavigationState:open_navigation()
     vim.keymap.set('n', 'v', function() action_on_item(item_cmd.vSplit) end, buffer_options)
     vim.keymap.set('n', 's', function() action_on_item(item_cmd.hSplit) end, buffer_options)
     vim.keymap.set('n', 't', function() action_on_item(item_cmd.openTab) end, buffer_options)
+    vim.keymap.set('n', 'r', change_cwd_callback, buffer_options)
 
     vim.keymap.set('n', 'ot', function()
         fm_shell.open_terminal(self:get_absolute_path())
@@ -458,6 +480,7 @@ function NavigationState:open_navigation()
     vim.keymap.set('n', 'pc', function() self:paste_selection(true) end, buffer_options)
     vim.keymap.set('n', 'gh', navigate_to_home_directory, buffer_options)
     vim.keymap.set('n', 'g/', navigate_to_root_directory, buffer_options)
+
 
     -- Plugin integration
     vim.keymap.set('n', 'f', function() fm_telescope:find_files(self) end, buffer_options)

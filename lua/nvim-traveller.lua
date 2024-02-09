@@ -79,22 +79,6 @@ function M.setup(options)
         end
     })
 
-    local function change_cwd_callback()
-        if vim.bo.bufhidden == "hide" then
-            return
-        end
-
-        local fd = vim.fn.expand('%:p:h')
-
-        if vim.fn.isdirectory(fd) == 1 then
-            fm_globals.set_cwd_to_git_root(fd)
-        end
-    end
-
-    vim.api.nvim_create_autocmd("BufEnter", {
-        callback = change_cwd_callback
-    })
-
     NavigationState:set_mod_options(options or {})
     fm_telescope.set_mod_options(options or {})
 
