@@ -5,7 +5,7 @@ local fm_telescope = require("nvim-traveller.plugin-telescope")
 local fm_shell = require("nvim-traveller.fm-shell")
 
 local path = require("plenary.path")
-local plenary = require("plenary")
+local scandir = require("plenary.scandir")
 local Location = require("nvim-traveller.fm-location")
 
 local item_cmd = {
@@ -205,33 +205,23 @@ function NavigationState:get_cursor_item()
 end
 
 function NavigationState:set_buffer_content(new_dir_path)
-    assert(fm_globals.is_item_directory(new_dir_path), "Passed path is not a directory")
+    --assert(fm_globals.is_item_directory(new_dir_path), "Passed path is not a directory")
 
     local function get_buffer_content()
-        local function get_cmd_prefix(param)
+        local function get_cmd()
             if self.show_hidden then
-                return "ls -pAL" .. param .. " "
+                return "ls -pAL"
             else
-                return "ls -pL" .. param .. " "
+                return "ls -pL"
             end
         end
 
-        local paths = vim.fn.systemlist(get_cmd_prefix("Q") .. new_dir_path)
-        
-        -- TODO fix display + result
-        --local display = vim.fn.systemlist(get_cmd_prefix("") .. new_dir_path)
-        --local ls_result = {
-            --display, 
-            --paths
-        --}
+        vim.api.nvim_set_current_dir(new_dir_path)
 
-        return paths;
+        return vim.fn.systemlist(get_cmd())
     end
 
-    self.dir_path = new_dir_path
-
-    vim.cmd("cd " .. self.dir_path)
-
+    self.dir_path = vim.fn.getcwd() .. "/"
     self.buf_content = get_buffer_content()
 
     vim.api.nvim_buf_set_option(self.buf_id, 'modifiable', true)
@@ -314,7 +304,7 @@ function NavigationState:navigate_to_parent()
     update_history_location(current_location)
     update_history_location(parent_location)
 
-    self:set_buffer_content(parent_location.dir_path)
+    self:set_buffer_content("..")
 end
 
 function NavigationState:open_navigation()
@@ -336,21 +326,18 @@ function NavigationState:open_navigation()
             return
         end
 
+        local abs_path = path:new(self.dir_path .. item):absolute()
+
         if fm_globals.is_item_directory(item) then
             if cmd_str == item_cmd.open then
-                local abs_path = path:new(self.dir_path .. item):absolute()
-                print(vim.inspect(abs_path))
-
-                self:set_buffer_content(abs_path)
+                self:set_buffer_content(item)
             end
         else
-            local abs_path = path:new(self.dir_path .. item):absolute()
-
             if fm_shell.is_file_binary(abs_path) and false then
                 vim.fn.jobstart("open " .. abs_path, { detach = true })
             else
-                local file_rel = path:new(self.dir_path .. item):make_relative()
-                vim.cmd(cmd_str .. ' ./' .. file_rel)
+                local file_rel = path:new(abs_path):make_relative()
+                vim.cmd(cmd_str .. " ./" .. file_rel)
             end
         end
     end
