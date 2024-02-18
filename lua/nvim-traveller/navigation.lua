@@ -221,8 +221,8 @@ function NavigationState:set_buffer_content(new_dir_path)
         return vim.fn.systemlist(get_cmd())
     end
 
-    self.dir_path = vim.fn.getcwd() .. "/"
     self.buf_content = get_buffer_content()
+    self.dir_path = vim.fn.getcwd() .. "/"
 
     vim.api.nvim_buf_set_option(self.buf_id, 'modifiable', true)
     vim.api.nvim_buf_set_lines(self.buf_id, 0, -1, true, self.buf_content)
@@ -332,13 +332,11 @@ function NavigationState:open_navigation()
             if cmd_str == item_cmd.open then
                 self:set_buffer_content(item)
             end
+        elseif fm_shell.is_file_binary(abs_path) and false then
+            vim.fn.jobstart("open " .. abs_path, { detach = true })
         else
-            if fm_shell.is_file_binary(abs_path) and false then
-                vim.fn.jobstart("open " .. abs_path, { detach = true })
-            else
-                local file_rel = path:new(abs_path):make_relative()
-                vim.cmd(cmd_str .. "./" .. item)
-            end
+            local file_rel = path:new(abs_path):make_relative()
+            vim.cmd(cmd_str .. "./" .. item)
         end
     end
 
