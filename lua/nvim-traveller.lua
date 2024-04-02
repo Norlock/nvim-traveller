@@ -1,8 +1,8 @@
 local NavigationState = require("nvim-traveller.navigation")
-local fm_globals = require("nvim-traveller.fm-globals")
 local fm_telescope = require("nvim-traveller.plugin-telescope")
 local path = require("plenary.path")
 local fm_shell = require("nvim-traveller.fm-shell")
+local fm_globals = require("nvim-traveller.fm-globals")
 
 local state = {}
 local M = {}
@@ -11,12 +11,6 @@ local M = {}
 ---@field show_hidden boolean show hidden by default or not (default is true)
 ---@field mappings table
 local ModOptions = {}
-
-function M.close_navigation()
-    if state.is_initialized then
-        state:close_navigation()
-    end
-end
 
 function M.open_navigation()
     if state.is_initialized then
@@ -30,10 +24,8 @@ function M.open_navigation()
     end
 end
 
----Searches directories and opens traveller
----deprecated (use all_directories_search / last_directories_search)
-function M.open_telescope_search()
-    M.last_directories_search()
+function M.git_root()
+    fm_globals.set_cwd_to_git_root()
 end
 
 function M.all_directories_search()

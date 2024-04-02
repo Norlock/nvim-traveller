@@ -65,11 +65,11 @@ function M.get_git_root(dir_path)
     return vim.fn.systemlist(sh_cmd)[1]
 end
 
-function M.set_cwd_to_git_root(dir_path)
-    local git_root = M.get_git_root(dir_path)
+function M.set_cwd_to_git_root()
+    local git_root = M.get_git_root(vim.fn.expand('%:p:h'))
 
     if git_root ~= nil then
-        vim.cmd("cd " .. git_root)
+        vim.api.nvim_set_current_dir(git_root);
     end
 end
 

@@ -5,8 +5,10 @@ local fm_telescope = require("nvim-traveller.plugin-telescope")
 local fm_shell = require("nvim-traveller.fm-shell")
 
 local path = require("plenary.path")
-local scandir = require("plenary.scandir")
 local Location = require("nvim-traveller.fm-location")
+
+local log = require("plenary.log"):new()
+log.level = "debug";
 
 local item_cmd = {
     open = 'e',
@@ -337,6 +339,7 @@ function NavigationState:open_navigation()
         else
             local file_rel = path:new(abs_path):make_relative()
             vim.cmd(cmd_str .. "./" .. item)
+            fm_globals.set_cwd_to_git_root();
         end
     end
 
@@ -422,15 +425,8 @@ function NavigationState:open_navigation()
     end
 
     local function close()
+        fm_globals.set_cwd_to_git_root();
         vim.cmd("silent! e #")
-    end
-
-    local function change_cwd_callback()
-        local fd = vim.fn.expand('%:p:h')
-
-        if vim.fn.isdirectory(fd) == 1 then
-            fm_globals.set_cwd_to_git_root(fd)
-        end
     end
 
     vim.keymap.set('n', 'q', close, buffer_options)
@@ -441,10 +437,9 @@ function NavigationState:open_navigation()
     vim.keymap.set('n', 'v', function() action_on_item(item_cmd.vSplit) end, buffer_options)
     vim.keymap.set('n', 's', function() action_on_item(item_cmd.hSplit) end, buffer_options)
     vim.keymap.set('n', 't', function() action_on_item(item_cmd.openTab) end, buffer_options)
-    vim.keymap.set('n', 'r', change_cwd_callback, buffer_options)
 
     vim.keymap.set('n', 'ot', function()
-        fm_shell.open_terminal(self:get_absolute_path())
+        fm_shell.open_terminal()
     end, buffer_options)
 
     vim.keymap.set('n', 'os', function()

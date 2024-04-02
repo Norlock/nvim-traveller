@@ -137,12 +137,12 @@ function M.create_new_items_cmd(dir_path, user_input)
     end
 end
 
-function M.open_terminal(abs_path)
+function M.open_terminal()
     local term = vim.fn.expand("$TERM")
 
-    local root = fm_globals.get_git_root(abs_path) or abs_path;
+    local cwd = vim.fn.expand("%:p:h");
 
-    vim.fn.jobstart(term, { cwd = root, detach = true })
+    vim.fn.jobstart(term, { cwd = cwd, detach = true })
 end
 
 function M.open_shell(rel_path)
