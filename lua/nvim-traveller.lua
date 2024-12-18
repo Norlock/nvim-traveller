@@ -56,20 +56,20 @@ end
 ---Setup global options
 ---@param options ModOptions
 function M.setup(options)
-    vim.api.nvim_create_autocmd("VimEnter", {
-        callback = function()
-            vim.api.nvim_del_augroup_by_name("FileExplorer")
+    --vim.api.nvim_create_autocmd("VimEnter", {
+    --    callback = function()
+    --        vim.api.nvim_del_augroup_by_name("FileExplorer")
 
-            local fn = vim.fn.expand('%:t')
-            local filetype = vim.bo.filetype
-            if filetype == "netrw" or fn == "" then
-                vim.bo.buftype = "nofile"
-                vim.bo.bufhidden = "wipe"
-                vim.bo.buflisted = false
-                M.open_navigation()
-            end
-        end
-    })
+    --        local fn = vim.fn.expand('%:t')
+    --        local filetype = vim.bo.filetype
+    --        if filetype == "netrw" or fn == "" then
+    --            vim.bo.buftype = "nofile"
+    --            vim.bo.bufhidden = "wipe"
+    --            vim.bo.buflisted = false
+    --            M.open_navigation()
+    --        end
+    --    end
+    --})
 
     NavigationState:set_mod_options(options or {})
     fm_telescope.set_mod_options(options or {})
